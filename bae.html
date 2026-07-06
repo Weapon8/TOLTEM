@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Boîte à eaux">
+<meta name="theme-color" content="#14181F">
+<title>TolTem — Boîte à eaux</title>
+<style>
+  :root{
+    --bg:#14181F; --panel:#1C232E; --panel2:#212B38; --line:#2A3340;
+    --txt:#E6EAF0; --muted:#8A94A6; --accent:#FF7A1A; --accent-dim:#3a2a15;
+    --corps:#CFD6E0; --raid:#FF7A1A; --tp:#4FC3F7; --ep:#66D17A; --arr:#C58CF0; --rec:#E0B050; --cote:#8A94A6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    background:var(--bg);color:var(--txt);
+    font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.4;padding:22px 16px 60px;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+  .bar{width:5px;height:40px;background:var(--accent);border-radius:3px}
+  h1{font-size:22px;font-weight:700;letter-spacing:.2px}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
+  @media(max-width:820px){ .grid{grid-template-columns:1fr} }
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h2{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin-bottom:12px;font-weight:700}
+  .card h2:not(:first-child){margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:12px 0 6px}
+  label:first-of-type{margin-top:0}
+  input[type=number]{
+    width:100%;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;color:var(--txt);font-size:15px;font-variant-numeric:tabular-nums;
+  }
+  input[type=number]:focus{outline:none;border-color:var(--accent)}
+  input[type=number]:disabled{opacity:.4}
+  .hidden{display:none}
+
+  .toggle{display:flex;gap:6px;flex-wrap:wrap}
+  .toggle button{
+    flex:1;min-width:56px;padding:10px 4px;border-radius:9px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .toggle button.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  .previewCard{padding:0;overflow:hidden;display:flex;flex-direction:column}
+  .vtabs{display:flex;border-bottom:1px solid var(--line)}
+  .vtabs button{
+    flex:1;padding:12px 8px;background:transparent;border:none;color:var(--muted);
+    font-size:12.5px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .vtabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+  canvas{display:block;width:100%;height:440px;background:var(--bg);touch-action:none}
+  @media(max-width:820px){ canvas{height:360px} }
+
+  .pvfoot{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .pvfoot .hint{color:var(--muted);font-size:11px;margin-right:auto}
+  .btn{padding:8px 14px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:12.5px;font-weight:600;cursor:pointer}
+  .btn.acc{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:11.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+  .decomp{margin-top:14px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:14px}
+  .decomp pre{font-family:"Consolas",ui-monospace,monospace;font-size:12px;color:var(--txt);white-space:pre-wrap;line-height:1.55}
+
+  footer{margin-top:26px;color:var(--muted);font-size:11.5px;text-align:center}
+  footer b{color:var(--accent)}
+
+  /* --- impression / fiche --- */
+  #sheet{display:none}
+  @media print{
+    body{padding:0;background:#fff;color:#000}
+    .wrap>*:not(#sheet){display:none}
+    #sheet{display:block}
+    #sheet img{max-width:100%;border:1px solid #ccc}
+    #sheet h3{font-size:18px;margin-bottom:4px}
+    #sheet .meta{color:#666;font-size:12px;margin-bottom:12px}
+    #sheet pre{font-family:"Consolas",monospace;font-size:12px;white-space:pre-wrap;margin-top:12px}
+    #sheet .sig{color:#888;font-style:italic;font-size:11px;margin-top:14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="bar"></div>
+    <div>
+      <h1>Boîte à eaux <span>TolTem</span></h1>
+      <div class="sub">Corps · trop-plein · EP (position perso) · sortie arrière · décompo 2/3 pièces</div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- ===== ENTRÉES ===== -->
+    <div class="card">
+      <h2>Corps</h2>
+      <div class="two">
+        <div><label>Longueur (mm)</label><input type="number" id="L" value="200" step="5"></div>
+        <div><label>Largeur (mm)</label><input type="number" id="P" value="200" step="5"></div>
+      </div>
+      <div class="two" style="margin-top:10px">
+        <div><label>Hauteur (mm)</label><input type="number" id="H" value="250" step="5"></div>
+        <div><label>Raidisseur (mm)</label><input type="number" id="Raid" value="10" step="1"></div>
+      </div>
+
+      <h2>Trop-plein (façade)</h2>
+      <div class="two">
+        <div><label>Largeur (mm)</label><input type="number" id="TPw" value="150" step="5"></div>
+        <div><label>Hauteur (mm)</label><input type="number" id="TPh" value="50" step="5"></div>
+      </div>
+      <label>Horizontal</label>
+      <div class="toggle" data-g="TPcol">
+        <button data-v="gauche">Gauche</button><button data-v="centre" class="on">Centre</button><button data-v="droite">Droite</button>
+      </div>
+      <label>Vertical</label>
+      <div class="toggle" data-g="TProw">
+        <button data-v="haut">Haut</button><button data-v="milieu" class="on">Milieu</button><button data-v="bas">Bas</button>
+      </div>
+
+      <h2>EP / naissance (fond)</h2>
+      <label>Forme</label>
+      <div class="toggle" data-g="EPforme">
+        <button data-v="rond" class="on">Ronde</button><button data-v="carre">Carrée</button><button data-v="rect">Rect</button>
+      </div>
+      <div class="two" style="margin-top:10px">
+        <div><label>Ø / largeur (mm)</label><input type="number" id="EPw" value="80" step="5"></div>
+        <div><label>Profondeur (mm)</label><input type="number" id="EPh" value="80" step="5"></div>
+      </div>
+      <label>Horizontal</label>
+      <div class="toggle" data-g="EPcol">
+        <button data-v="gauche">Gauche</button><button data-v="centre" class="on">Centre</button><button data-v="droite">Droite</button><button data-v="perso">Perso</button>
+      </div>
+      <div id="wrapEPx" class="hidden"><label>X depuis gauche (mm)</label><input type="number" id="EPxCustom" value="100" step="1"></div>
+      <label>Profondeur</label>
+      <div class="toggle" data-g="EProw">
+        <button data-v="avant">Avant</button><button data-v="centre" class="on">Centre</button><button data-v="arriere">Arrière</button><button data-v="perso">Perso</button>
+      </div>
+      <div id="wrapEPz" class="hidden"><label>Z depuis arrière (mm)</label><input type="number" id="EPzCustom" value="100" step="1"></div>
+
+      <h2>Arrière (sortie toiture)</h2>
+      <label>Ouverture</label>
+      <div class="toggle" data-g="ARforme">
+        <button data-v="aucune" class="on">Aucune</button><button data-v="rond">Ronde</button><button data-v="carre">Carrée</button><button data-v="rect">Rect</button>
+      </div>
+      <div class="two" style="margin-top:10px">
+        <div><label>Ø / largeur (mm)</label><input type="number" id="ARw" value="100" step="5"></div>
+        <div><label>Hauteur (mm)</label><input type="number" id="ARh" value="100" step="5"></div>
+      </div>
+      <label>Horizontal</label>
+      <div class="toggle" data-g="ARcol">
+        <button data-v="gauche">Gauche</button><button data-v="centre" class="on">Centre</button><button data-v="droite">Droite</button>
+      </div>
+      <label>Vertical</label>
+      <div class="toggle" data-g="ARrow">
+        <button data-v="haut">Haut</button><button data-v="milieu" class="on">Milieu</button><button data-v="bas">Bas</button>
+      </div>
+
+      <h2>Décomposition</h2>
+      <div class="toggle" data-g="Back3">
+        <button data-v="0" class="on">2 pièces (wrap + fond)</button><button data-v="1">3 pièces (dosseret séparé)</button>
+      </div>
+    </div>
+
+    <!-- ===== APERÇU ===== -->
+    <div>
+      <div class="card previewCard">
+        <div class="vtabs" data-g="mode">
+          <button data-v="3d" class="on">Vue 3D</button><button data-v="flat">Développé</button>
+        </div>
+        <canvas id="cv"></canvas>
+        <div class="pvfoot">
+          <span class="hint" id="hint">Glisser : orbite · molette / pinch : zoom</span>
+          <button class="btn" id="recenter">Recentrer</button>
+          <button class="btn acc" id="print">Fiche / PDF</button>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><i style="background:var(--raid)"></i>raidisseur / plis</span>
+        <span><i style="background:var(--tp)"></i>trop-plein</span>
+        <span><i style="background:var(--ep)"></i>EP</span>
+        <span><i style="background:var(--arr)"></i>arrière</span>
+        <span><i style="background:var(--rec)"></i>recouvrement</span>
+      </div>
+
+      <div class="decomp"><pre id="decomp"></pre></div>
+    </div>
+  </div>
+
+  <!-- fiche imprimable -->
+  <div id="sheet">
+    <h3>Boîte à eaux — fiche de validation</h3>
+    <div class="meta" id="sheetMeta"></div>
+    <img id="sheetImg" alt="">
+    <pre id="sheetCotes"></pre>
+    <div class="sig">Made with love by weapon666 pour TolTem</div>
+  </div>
+
+  <footer>Made with love by <b>weapon666</b> pour TolTem</footer>
+</div>
+
+<script>
+const r0 = x => Math.round(x);
+
+function makeModel(){
+  return {
+    L:200,P:200,H:250,Raid:10,
+    TPw:150,TPh:50,TPcol:'centre',TProw:'milieu',
+    EPforme:'rond',EPw:80,EPh:80,EPcol:'centre',EProw:'centre',EPxCustom:100,EPzCustom:100,
+    ARforme:'aucune',ARw:100,ARh:100,ARcol:'centre',ARrow:'milieu',
+    Back3:false,
+    DesSize:10,Tombee:25,DesFondAngle:52,Margin:18,FondTombee:23.5,RecArr:30,
+    get FondL(){return this.L+2*this.FondTombee;},
+    get FondP(){return this.P+2*this.FondTombee;},
+
+    build(segs,notes){
+      segs.length=0;notes.length=0;
+      const L=this.L,P=this.P,H=this.H,R=this.Raid,hx=L/2,hz=P/2,M=this.Margin;
+      const seg=(ax,ay,az,bx,by,bz,c)=>segs.push({ax,ay,az,bx,by,bz,c});
+      const note=(x,y,z,t,c)=>notes.push({x,y,z,t,c});
+      const loop=(p,c)=>{for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];seg(a[0],a[1],a[2],b[0],b[1],b[2],c);}};
+      const bp=[[-hx,0,-hz],[hx,0,-hz],[hx,0,hz],[-hx,0,hz]];
+      const tp=[[-hx,H,-hz],[hx,H,-hz],[hx,H,hz],[-hx,H,hz]];
+      loop(bp,'Corps');loop(tp,'Corps');
+      for(let i=0;i<4;i++) seg(bp[i][0],bp[i][1],bp[i][2],tp[i][0],tp[i][1],tp[i][2],'Corps');
+      if(R>0){
+        const ti=[[-hx+R,H,-hz+R],[hx-R,H,-hz+R],[hx-R,H,hz-R],[-hx+R,H,hz-R]];
+        loop(ti,'Raid');
+        for(let i=0;i<4;i++) seg(tp[i][0],tp[i][1],tp[i][2],ti[i][0],ti[i][1],ti[i][2],'Raid');
+      }
+      {const rec=this.RecArr,z=-hz;
+        loop([[-hx,0,z],[-hx+rec,0,z],[-hx+rec,H,z],[-hx,H,z]],'Rec');
+        loop([[hx,0,z],[hx-rec,0,z],[hx-rec,H,z],[hx,H,z]],'Rec');
+        seg(-hx,0,z,-hx,H,z,'Rec');seg(hx,0,z,hx,H,z,'Rec');
+        note(-hx+rec/2,H*0.5,z,`rec ${r0(rec)}`,'Rec');}
+      note(0,-14,hz,`L ${r0(L)}`,'Cote');
+      note(hx,H/2,hz,`H ${r0(H)}`,'Cote');
+      note(hx,-14,0,`larg ${r0(P)}`,'Cote');
+      {const w=this.TPw,h=this.TPh;
+        const cx=this.TPcol==='gauche'?-hx+M+w/2:this.TPcol==='droite'?hx-M-w/2:0;
+        const cy=this.TProw==='haut'?H-M-h/2:this.TProw==='bas'?M+h/2:H/2;
+        const z=hz;
+        const o=[[cx-w/2,cy-h/2,z],[cx+w/2,cy-h/2,z],[cx+w/2,cy+h/2,z],[cx-w/2,cy+h/2,z]];
+        loop(o,'TP');
+        const lip=Math.min(30,h*0.6),zo=z+lip;
+        seg(o[0][0],o[0][1],o[0][2],cx-w/2,cy-h/2,zo,'TP');
+        seg(o[1][0],o[1][1],o[1][2],cx+w/2,cy-h/2,zo,'TP');
+        seg(cx-w/2,cy-h/2,zo,cx+w/2,cy-h/2,zo,'TP');
+        seg(o[3][0],o[3][1],o[3][2],cx-w/2,cy-h/2,zo,'TP');
+        seg(o[2][0],o[2][1],o[2][2],cx+w/2,cy-h/2,zo,'TP');
+        note(cx,cy,zo,`TP ${r0(w)}×${r0(h)}`,'TP');}
+      {const w=this.EPw,h=this.EPforme==='rond'?this.EPw:this.EPforme==='carre'?this.EPw:this.EPh;
+        const cx=this.EPcol==='perso'?-hx+this.EPxCustom:this.EPcol==='gauche'?-hx+M+w/2:this.EPcol==='droite'?hx-M-w/2:0;
+        const cz=this.EProw==='perso'?-hz+this.EPzCustom:this.EProw==='avant'?hz-M-h/2:this.EProw==='arriere'?-hz+M+h/2:0;
+        const len=70;
+        if(this.EPforme==='rond'){
+          const N=40,a0=[],a1=[];
+          for(let i=0;i<N;i++){const a=i/N*Math.PI*2;a0.push([cx+w/2*Math.cos(a),0,cz+w/2*Math.sin(a)]);a1.push([cx+w/2*Math.cos(a),-len,cz+w/2*Math.sin(a)]);}
+          loop(a0,'EP');loop(a1,'EP');
+          for(let i=0;i<N;i+=5) seg(a0[i][0],a0[i][1],a0[i][2],a1[i][0],a1[i][1],a1[i][2],'EP');
+        } else {
+          const c0=[[cx-w/2,0,cz-h/2],[cx+w/2,0,cz-h/2],[cx+w/2,0,cz+h/2],[cx-w/2,0,cz+h/2]];
+          const c1=[[cx-w/2,-len,cz-h/2],[cx+w/2,-len,cz-h/2],[cx+w/2,-len,cz+h/2],[cx-w/2,-len,cz+h/2]];
+          loop(c0,'EP');loop(c1,'EP');
+          for(let i=0;i<4;i++) seg(c0[i][0],c0[i][1],c0[i][2],c1[i][0],c1[i][1],c1[i][2],'EP');
+        }
+        const t=this.EPforme==='rond'?`EP Ø${r0(this.EPw)}`:this.EPforme==='carre'?`EP ${r0(this.EPw)}`:`EP ${r0(this.EPw)}×${r0(this.EPh)}`;
+        note(cx,-len,cz,t,'EP');}
+      if(this.ARforme!=='aucune'){
+        const w=this.ARw,h=this.ARforme==='rect'?this.ARh:this.ARw,z=-hz;
+        const cx=this.ARcol==='gauche'?-hx+M+w/2:this.ARcol==='droite'?hx-M-w/2:0;
+        const cy=this.ARrow==='haut'?H-M-h/2:this.ARrow==='bas'?M+h/2:H/2;
+        if(this.ARforme==='rond'){
+          const N=40,a=[];
+          for(let i=0;i<N;i++){const tt=i/N*Math.PI*2;a.push([cx+w/2*Math.cos(tt),cy+h/2*Math.sin(tt),z]);}
+          loop(a,'Arr');
+        } else loop([[cx-w/2,cy-h/2,z],[cx+w/2,cy-h/2,z],[cx+w/2,cy+h/2,z],[cx-w/2,cy+h/2,z]],'Arr');
+        const t=this.ARforme==='rond'?`ARR Ø${r0(this.ARw)}`:this.ARforme==='carre'?`ARR ${r0(this.ARw)}`:`ARR ${r0(this.ARw)}×${r0(this.ARh)}`;
+        note(cx,cy,z,t,'Arr');}
+    },
+
+    buildFlat(segs,notes){
+      segs.length=0;notes.length=0;
+      const L=this.L,P=this.P,H=this.H,R=this.Raid,REC=this.RecArr,D=this.DesSize;
+      const top=H+R,gap=70;let cursorX=0;
+      const seg=(x1,y1,x2,y2,c)=>segs.push({ax:x1,ay:y1,az:0,bx:x2,by:y2,bz:0,c});
+      const note=(x,y,t,c)=>notes.push({x,y,z:0,t,c});
+      const poly=(p,c)=>{for(let i=0;i<p.length-1;i++) seg(p[i][0],p[i][1],p[i+1][0],p[i+1][1],c);};
+      if(!this.Back3){
+        const xA=L,xB=L+P,xC=2*L+P,xD=2*L+2*P,xE=xD+REC;
+        const pts=[[0,0],[xE,0],[xE,H],[xD,H],[xD,top-D],[xD-D,top]];
+        for(const xf of [xC,xB,xA]){pts.push([xf+D,top]);pts.push([xf,H]);pts.push([xf-D,top]);}
+        pts.push([D,top]);pts.push([0,top-D]);pts.push([0,0]);
+        poly(pts,'Corps');
+        for(const x of [xA,xB,xC,xD]) seg(x,0,x,H,'Raid');
+        seg(0,H,xD,H,'Raid');seg(xD,0,xD,H,'Rec');
+        note((xD+xE)/2,H*0.5,'rec','Rec');
+        note(L*0.5,H*0.45,'ARRIERE','Cote');
+        note((xA+xB)*0.5,H*0.45,'COTE','Cote');
+        note((xB+xC)*0.5,H*0.28,'FACADE','Cote');
+        note((xC+xD)*0.5,H*0.45,'COTE','Cote');
+        note(xA*0.5,top+8,`desanglage ${r0(D)} a 45°`,'Corps');
+        this._flatTP(seg,note,xB);this._flatArr(seg,note,0);
+        cursorX=xE+gap;
+      } else {
+        const xr1=REC,xc1=REC+P,xf2=REC+P+L,xc2=REC+P+L+P,xe=xc2+REC;
+        const pts=[[0,0],[xe,0],[xe,H],[xc2,H],[xc2,top-D],[xc2-D,top]];
+        for(const xf of [xf2,xc1]){pts.push([xf+D,top]);pts.push([xf,H]);pts.push([xf-D,top]);}
+        pts.push([xr1+D,top]);pts.push([xr1,top-D]);pts.push([xr1,H]);pts.push([0,H]);pts.push([0,0]);
+        poly(pts,'Corps');
+        for(const x of [xr1,xc1,xf2,xc2]) seg(x,0,x,H,'Raid');
+        seg(xr1,H,xc2,H,'Raid');
+        note(REC/2,H*0.5,'rec','Rec');note(xe-REC/2,H*0.5,'rec','Rec');
+        note((xr1+xc1)*0.5,H*0.45,'COTE','Cote');
+        note((xc1+xf2)*0.5,H*0.28,'FACADE','Cote');
+        note((xf2+xc2)*0.5,H*0.45,'COTE','Cote');
+        this._flatTP(seg,note,xc1);
+        cursorX=xe+gap;
+        this._dosseretFlat(seg,note,cursorX);
+        cursorX+=L+gap;
+      }
+      this._fondFlat(seg,note,cursorX);
+    },
+
+    _dosseretFlat(seg,note,x0){
+      const L=this.L,H=this.H,R=this.Raid,D=this.DesSize,top=H+R;
+      const pts=[[x0,0],[x0+L,0],[x0+L,top-D],[x0+L-D,top],[x0+D,top],[x0,top-D],[x0,0]];
+      for(let i=0;i<pts.length-1;i++) seg(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'Corps');
+      seg(x0,H,x0+L,H,'Raid');
+      note(x0+L*0.5,H*0.5,'DOSSERET','Cote');
+      this._flatArr(seg,note,x0);
+    },
+    _fondFlat(seg,note,X){
+      const fl=this.FondL,fp=this.FondP,TB=this.Tombee,ha=this.DesFondAngle;
+      const e=TB*(1+Math.tan((ha-45)*Math.PI/180));
+      const x0=X,x1=X+fl,y0=0,y1=fp;
+      const pts=[[x0+e,y0],[x1-e,y0],[x1-TB,y0+TB],[x1,y0+e],[x1,y1-e],[x1-TB,y1-TB],[x1-e,y1],[x0+e,y1],[x0+TB,y1-TB],[x0,y1-e],[x0,y0+e],[x0+TB,y0+TB],[x0+e,y0]];
+      for(let i=0;i<pts.length-1;i++) seg(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'Corps');
+      seg(X+TB,TB,X+fl-TB,TB,'Raid');seg(X+fl-TB,TB,X+fl-TB,fp-TB,'Raid');
+      seg(X+fl-TB,fp-TB,X+TB,fp-TB,'Raid');seg(X+TB,fp-TB,X+TB,TB,'Raid');
+      this._flatEP(seg,note,X+TB,TB);
+      note(X+fl*0.5,fp+16,`FOND ${r0(fl)}×${r0(fp)} - encoche ${r0(TB)}×${r0(TB)} a ${r0(ha)}°/cote`,'Cote');
+    },
+    _flatTP(seg,note,panelX){
+      const w=this.TPw,h=this.TPh,L=this.L,H=this.H,M=this.Margin;
+      const cx=this.TPcol==='gauche'?M+w/2:this.TPcol==='droite'?L-M-w/2:L/2;
+      const cy=this.TProw==='haut'?H-M-h/2:this.TProw==='bas'?M+h/2:H/2;
+      this._rect(seg,panelX+cx-w/2,cy-h/2,w,h,'TP');
+      note(panelX+cx,cy,`TP ${r0(w)}×${r0(h)}`,'TP');
+    },
+    _flatArr(seg,note,panelX){
+      if(this.ARforme==='aucune') return;
+      const w=this.ARw,h=this.ARforme==='rect'?this.ARh:this.ARw,L=this.L,H=this.H,M=this.Margin;
+      const cx=this.ARcol==='gauche'?M+w/2:this.ARcol==='droite'?L-M-w/2:L/2;
+      const cy=this.ARrow==='haut'?H-M-h/2:this.ARrow==='bas'?M+h/2:H/2;
+      if(this.ARforme==='rond') this._circle(seg,panelX+cx,cy,w/2,'Arr');
+      else this._rect(seg,panelX+cx-w/2,cy-h/2,w,h,'Arr');
+      const t=this.ARforme==='rond'?`ARR Ø${r0(this.ARw)}`:this.ARforme==='carre'?`ARR ${r0(this.ARw)}`:`ARR ${r0(this.ARw)}×${r0(this.ARh)}`;
+      note(panelX+cx,cy,t,'Arr');
+    },
+    _flatEP(seg,note,fx,fy){
+      const floorW=this.FondL-2*this.Tombee,floorH=this.FondP-2*this.Tombee,M=this.Margin;
+      const w=this.EPw,h=this.EPforme==='rect'?this.EPh:this.EPw;
+      const cx=this.EPcol==='perso'?this.EPxCustom:this.EPcol==='gauche'?M+w/2:this.EPcol==='droite'?floorW-M-w/2:floorW/2;
+      const cz=this.EProw==='perso'?this.EPzCustom:this.EProw==='avant'?floorH-M-h/2:this.EProw==='arriere'?M+h/2:floorH/2;
+      if(this.EPforme==='rond') this._circle(seg,fx+cx,fy+cz,w/2,'EP');
+      else this._rect(seg,fx+cx-w/2,fy+cz-h/2,w,h,'EP');
+      const t=this.EPforme==='rond'?`EP Ø${r0(this.EPw)}`:this.EPforme==='carre'?`EP ${r0(this.EPw)}`:`EP ${r0(this.EPw)}×${r0(this.EPh)}`;
+      note(fx+cx,fy+cz,t,'EP');
+    },
+    _rect(seg,x,y,w,h,c){seg(x,y,x+w,y,c);seg(x+w,y,x+w,y+h,c);seg(x+w,y+h,x,y+h,c);seg(x,y+h,x,y,c);},
+    _circle(seg,cx,cy,r,c){const N=36;let px=cx+r,py=cy;for(let i=1;i<=N;i++){const a=i/N*Math.PI*2,x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);seg(px,py,x,y,c);px=x;py=y;}},
+
+    decomp(){
+      const ep=this.EPforme==='rond'?`ronde Ø${r0(this.EPw)}`:this.EPforme==='carre'?`carree ${r0(this.EPw)}`:`rect ${r0(this.EPw)}×${r0(this.EPh)}`;
+      const ar=this.ARforme==='aucune'?'lisse':this.ARforme==='rond'?`ronde Ø${r0(this.ARw)}`:this.ARforme==='carre'?`carree ${r0(this.ARw)}`:`rect ${r0(this.ARw)}×${r0(this.ARh)}`;
+      let s='';
+      if(this.Back3){
+        s+=`1 - Corps en U     cote + facade + cote\n2 - Dosseret arr.  ${ar}\n3 - Fond + EP      ${r0(this.FondL)}×${r0(this.FondP)}\n`;
+      } else {
+        s+=`1 - Corps (wrap)   4 faces - rec.arr 30\n2 - Fond + EP      ${r0(this.FondL)}×${r0(this.FondP)}\n`;
+      }
+      s+=`\nHauteur finie = ${r0(this.H)} - raidisseur ${r0(this.Raid)}\ninterne (flan ${r0(this.H+this.Raid)}). Fond = cote +\n2x tombee. EP ${ep}.\nArriere : ${ar} (sortie toiture).`;
+      return s;
+    },
+    coteLines(){
+      const ep=this.EPforme==='rond'?`ronde Ø${r0(this.EPw)}`:this.EPforme==='carre'?`carree ${r0(this.EPw)}`:`rect ${r0(this.EPw)}×${r0(this.EPh)}`;
+      const ar=this.ARforme==='aucune'?'lisse':this.ARforme==='rond'?`ronde Ø${r0(this.ARw)}`:this.ARforme==='carre'?`carree ${r0(this.ARw)}`:`rect ${r0(this.ARw)}×${r0(this.ARh)}`;
+      const epCol=this.EPcol==='perso'?`X${r0(this.EPxCustom)} depuis gauche`:this.EPcol;
+      const epRow=this.EProw==='perso'?`Z${r0(this.EPzCustom)} depuis arriere`:this.EProw;
+      return [
+        `Longueur (L)        : ${r0(this.L)} mm`,
+        `Largeur             : ${r0(this.P)} mm`,
+        `Hauteur finie       : ${r0(this.H)} mm`,
+        `Raidisseur interne  : ${r0(this.Raid)} mm  (flan ${r0(this.H+this.Raid)})`,
+        `Trop-plein          : ${r0(this.TPw)}x${r0(this.TPh)} mm  (${this.TProw}/${this.TPcol})`,
+        `EP / naissance      : ${ep}  (${epRow}/${epCol})`,
+        `Sortie toiture arr. : ${ar}`,
+        `Fond                : ${r0(this.FondL)}x${r0(this.FondP)} mm`,
+        `Decomposition       : ${this.Back3?'3 pieces (dosseret separe)':'2 pieces (corps + fond)'}`,
+      ].join('\n');
+    }
+  };
+}
+
+// ---------- RENDU CANVAS ----------
+const COL={Corps:'#CFD6E0',Raid:'#FF7A1A',TP:'#4FC3F7',EP:'#66D17A',Arr:'#C58CF0',Rec:'#E0B050',Cote:'#8A94A6'};
+const m=makeModel();
+let mode='3d', rotX=-0.5, rotY=0.7, zoom=1, panX=0, panY=0;
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+
+function rot(p){
+  const X=p.x, Y=p.y-m.H/2, Z=p.z;
+  const cy=Math.cos(rotY),sy=Math.sin(rotY);
+  const x1=X*cy+Z*sy, z1=-X*sy+Z*cy;
+  const cx=Math.cos(rotX),sx=Math.sin(rotX);
+  return {x:x1, y:Y*cx-z1*sx};
+}
+
+function draw(){
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth, h=cv.clientHeight;
+  cv.width=w*dpr; cv.height=h*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+
+  const segs=[],notes=[];
+  if(mode==='flat') m.buildFlat(segs,notes); else m.build(segs,notes);
+  if(!segs.length) return;
+  const tr = mode==='flat' ? p=>({x:p.x,y:p.y}) : p=>rot(p);
+
+  let minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+  const A=[],B=[];
+  for(const s of segs){
+    const a=tr({x:s.ax,y:s.ay,z:s.az}), b=tr({x:s.bx,y:s.by,z:s.bz});
+    A.push(a);B.push(b);
+    minx=Math.min(minx,a.x,b.x);maxx=Math.max(maxx,a.x,b.x);
+    miny=Math.min(miny,a.y,b.y);maxy=Math.max(maxy,a.y,b.y);
+  }
+  const spanx=Math.max(1,maxx-minx), spany=Math.max(1,maxy-miny);
+  const scale=Math.min(w/spanx,h/spany)*0.80*zoom;
+  const cx0=w/2-(minx+maxx)/2*scale+panX;
+  const cy0=h/2+(miny+maxy)/2*scale+panY;
+  const SP=p=>({x:cx0+p.x*scale, y:cy0-p.y*scale});
+
+  ctx.lineWidth=1.4; ctx.lineJoin='round'; ctx.lineCap='round';
+  for(let i=0;i<segs.length;i++){
+    ctx.strokeStyle=COL[segs[i].c]||COL.Cote;
+    const a=SP(A[i]),b=SP(B[i]);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  }
+  ctx.font='700 10.5px "Segoe UI",system-ui,sans-serif';
+  ctx.textBaseline='bottom';
+  for(const n of notes){
+    const p=SP(tr({x:n.x,y:n.y,z:n.z}));
+    ctx.fillStyle=COL[n.c]||COL.Cote;
+    ctx.fillText(n.t,p.x+5,p.y-2);
+  }
+}
+
+// ---------- INTERACTION ----------
+const pointers=new Map();
+let lastPinch=0;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});});
+cv.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);lastPinch=0;});
+cv.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);lastPinch=0;});
+cv.addEventListener('pointermove',e=>{
+  if(!pointers.has(e.pointerId)) return;
+  const prev=pointers.get(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size>=2){
+    const p=[...pointers.values()];
+    const d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);
+    if(lastPinch){ zoom=Math.max(0.3,Math.min(4,zoom*(d/lastPinch))); draw(); }
+    lastPinch=d; return;
+  }
+  const dx=e.clientX-prev.x, dy=e.clientY-prev.y;
+  if(mode==='flat'){ panX+=dx; panY+=dy; }
+  else { rotY+=dx*0.01; rotX=Math.max(-1.4,Math.min(1.4,rotX+dy*0.01)); }
+  draw();
+});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.3,Math.min(4,zoom*(e.deltaY<0?1.1:0.9)));draw();},{passive:false});
+
+// ---------- UI ----------
+function setModel(k,v){ m[k]=v; syncEnable(); update(); }
+
+document.querySelectorAll('.toggle[data-g], .vtabs[data-g]').forEach(grp=>{
+  const g=grp.dataset.g;
+  grp.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      grp.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      const v=btn.dataset.v;
+      if(g==='mode'){ mode=v; panX=panY=0; document.getElementById('hint').textContent = mode==='flat'?'Glisser : déplacer · molette / pinch : zoom':'Glisser : orbite · molette / pinch : zoom'; draw(); return; }
+      if(g==='Back3'){ setModel('Back3', v==='1'); return; }
+      setModel(g,v);
+    });
+  });
+});
+
+['L','P','H','Raid','TPw','TPh','EPw','EPh','EPxCustom','EPzCustom','ARw','ARh'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',e=>{
+    const v=parseFloat(e.target.value); if(isFinite(v)) setModel(id,v);
+  });
+});
+
+function syncEnable(){
+  document.getElementById('EPh').disabled = m.EPforme!=='rect';
+  document.getElementById('ARw').disabled = m.ARforme==='aucune';
+  document.getElementById('ARh').disabled = m.ARforme!=='rect';
+  document.getElementById('wrapEPx').classList.toggle('hidden', m.EPcol!=='perso');
+  document.getElementById('wrapEPz').classList.toggle('hidden', m.EProw!=='perso');
+}
+
+function update(){
+  document.getElementById('decomp').textContent=m.decomp();
+  draw();
+}
+
+document.getElementById('recenter').addEventListener('click',()=>{
+  if(mode==='flat'){panX=panY=0;} else {rotX=-0.5;rotY=0.7;}
+  zoom=1;draw();
+});
+
+document.getElementById('print').addEventListener('click',()=>{
+  document.getElementById('sheetMeta').textContent='Suite TolTem · '+new Date().toLocaleDateString('fr-FR');
+  document.getElementById('sheetImg').src=cv.toDataURL('image/png');
+  document.getElementById('sheetCotes').textContent=m.coteLines();
+  window.print();
+});
+
+new ResizeObserver(draw).observe(cv);
+syncEnable(); update();
+</script>
+</body>
+</html>

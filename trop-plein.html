@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Trop-Plein">
+<meta name="theme-color" content="#14181F">
+<title>TolTem — Trop-Plein</title>
+<style>
+  :root{
+    --bg:#14181F; --panel:#1C232E; --panel2:#212B38; --line:#2A3340;
+    --txt:#E6EAF0; --muted:#8A94A6; --accent:#FF7A1A; --accent-dim:#3a2a15;
+    --fond:#57C06B; --flanc:#4DA6FF; --capot:#E5555F; --cote:#B36BFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--txt);
+    font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.4;padding:22px 16px 60px;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+  .bar{width:5px;height:40px;background:var(--accent);border-radius:3px}
+  h1{font-size:22px;font-weight:700;letter-spacing:.2px}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
+  @media(max-width:820px){
+    .grid{grid-template-columns:1fr}
+  }
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h2{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin-bottom:12px;font-weight:700}
+  .card h2:not(:first-child){margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:12px 0 6px}
+  label:first-of-type{margin-top:0}
+  input[type=number]{
+    width:100%;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;color:var(--txt);font-size:15px;font-variant-numeric:tabular-nums;
+  }
+  input[type=number]:focus{outline:none;border-color:var(--accent)}
+
+  .toggle{display:flex;gap:6px}
+  .toggle button{
+    flex:1;padding:10px 6px;border-radius:9px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;
+  }
+  .toggle button.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  .previewCard{padding:0;overflow:hidden;display:flex;flex-direction:column}
+  .vtabs{display:flex;border-bottom:1px solid var(--line)}
+  .vtabs button{
+    flex:1;padding:12px 8px;background:transparent;border:none;color:var(--muted);
+    font-size:12.5px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .vtabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+  canvas{display:block;width:100%;height:420px;background:var(--bg);touch-action:none}
+
+  .results{margin-top:18px}
+  .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .res{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .res .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .res .v{font-size:22px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+  .res .v small{font-size:12px;color:var(--muted);font-weight:400;margin-left:3px}
+  .res.big{grid-column:span 2}
+  .res.big .v{font-size:26px;color:var(--accent)}
+  @media(max-width:560px){.res.big{grid-column:span 1}}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:11.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+  footer{margin-top:26px;color:var(--muted);font-size:11.5px;text-align:center}
+  footer b{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="bar"></div>
+    <div>
+      <h1>Trop-Plein <span>TolTem</span></h1>
+      <div class="sub">Développé U + capot séparé · pente réglable % ou ° · zinc / galva / alu</div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- ===== ENTRÉES ===== -->
+    <div class="card">
+      <h2>Section du trop-plein</h2>
+      <div class="two">
+        <div><label>Longueur (mm)</label><input type="number" id="L" value="200" step="5"></div>
+        <div><label>Largeur (mm)</label><input type="number" id="lg" value="100" step="5"></div>
+      </div>
+      <label>Hauteur (mm)</label><input type="number" id="H" value="400" step="5">
+      <label>Recouvrement flanc / côté (mm)</label><input type="number" id="rec" value="30" step="5">
+      <label>Recouvrement mini hauteur (mm)</label><input type="number" id="recH" value="20" step="5">
+
+      <h2>Platine</h2>
+      <div class="toggle" id="tgPlat">
+        <button data-v="droite" class="on">Droite</button>
+        <button data-v="angle">Angle</button>
+        <button data-v="deport">Déportée</button>
+      </div>
+      <div class="two" style="margin-top:10px">
+        <div><label>Angle platine (°)</label><input type="number" id="angPlat" value="0" step="1"></div>
+        <div><label>Déport (mm)</label><input type="number" id="deport" value="0" step="5"></div>
+      </div>
+
+      <h2>Bec (gueule)</h2>
+      <div class="toggle" id="tgBec">
+        <button data-v="droit" class="on">Droit</button>
+        <button data-v="biseau">Biseauté</button>
+      </div>
+      <label>Angle biseau (°)</label><input type="number" id="angBec" value="0" step="1">
+
+      <h2>Pente <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(tube basculé vers le bas)</span></h2>
+      <div class="toggle" id="tgUnit">
+        <button data-v="pct" class="on">Pourcentage %</button>
+        <button data-v="deg">Degrés °</button>
+      </div>
+      <label id="lblPente">Valeur (%)</label><input type="number" id="pente" value="0" step="1">
+    </div>
+
+    <!-- ===== APERÇU ===== -->
+    <div class="card previewCard">
+      <div class="vtabs" id="vtabs">
+        <button data-v="3d" class="on">Vue 3D</button>
+        <button data-v="flat">Développé</button>
+      </div>
+      <canvas id="cv"></canvas>
+    </div>
+  </div>
+
+  <!-- ===== RÉSULTATS ===== -->
+  <div class="results card">
+    <h2>Cotes calculées</h2>
+    <div class="rgrid" id="results"></div>
+    <div class="legend">
+      <span><i style="background:var(--fond)"></i>Fond</span>
+      <span><i style="background:var(--flanc)"></i>Flancs</span>
+      <span><i style="background:var(--capot)"></i>Capot / recouvrement</span>
+      <span><i style="background:var(--repere)"></i>Refend</span>
+      <span><i style="background:var(--cote)"></i>Cotation</span>
+    </div>
+  </div>
+
+  <footer>Made with love by <b>weapon666</b> pour TolTem</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const S={plat:'droite',bec:'droit',unit:'pct',view:'3d'};
+
+function readNum(id){return parseFloat($(id).value)||0;}
+function penteRatio(){ // returns tan(angle)
+  const v=readNum('pente');
+  return S.unit==='pct'? v/100 : Math.tan(v*Math.PI/180);
+}
+function penteDeg(){
+  return S.unit==='pct'? Math.atan(readNum('pente')/100)*180/Math.PI : readNum('pente');
+}
+
+// ---- toggles ----
+function bindToggle(elId,key,cb){
+  document.querySelectorAll('#'+elId+' button').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('#'+elId+' button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); S[key]=b.dataset.v; cb&&cb(); recompute();
+    };
+  });
+}
+bindToggle('tgPlat','plat');
+bindToggle('tgBec','bec');
+bindToggle('tgUnit','unit',()=>{ $('lblPente').textContent = S.unit==='pct'?'Valeur (%)':'Valeur (°)'; });
+document.querySelectorAll('#vtabs button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('#vtabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.view=b.dataset.v;render();};
+});
+['L','H','lg','rec','recH','angPlat','deport','angBec','pente'].forEach(id=>{
+  const el=$(id);
+  el.addEventListener('input',recompute);
+  el.addEventListener('change',recompute);
+  // sélectionne tout au focus -> pas de "020" collé
+  el.addEventListener('focus',()=>{ setTimeout(()=>el.select(),0); });
+  // quand on ferme le clavier (blur), on ramène la vue à l'écran
+  el.addEventListener('blur',()=>{ recompute(); setTimeout(()=>cv.scrollIntoView({behavior:'smooth',block:'center'}),100); });
+});
+
+// ================= GÉOMÉTRIE =================
+// Vocabulaire Weapon : L=Longueur (fond du U, 200), lg=Largeur (flancs, 100), H=Hauteur (grande dim. le long du pli, 400)
+let G={};
+function compute(){
+  const larg=readNum('L'), prof=readNum('lg'), lng=readNum('H'), rec=readNum('rec');
+  const recH=readNum('recH');                // recouvrement mini sur la hauteur
+  const t=penteRatio();                      // tan(pente)
+  const penteDegRound=Math.round(penteDeg());// plieuse au degré entier
+  // pente : flancs pliés à 90°, fond plié à 180-angle pour créer la pente
+  const plisFond=180-penteDegRound;          // ex. 20% -> 169°
+  // dénivelés (allongement dû à la pente)
+  const dropFlanc=prof*t;                     // pente sur profondeur (ex 100*.2=20)
+  const refendFond=larg*t;                    // (info) pente sur largeur
+  // HAUTEUR DÉVELOPPÉ = h + pointage(platine) + pente(flanc×pente)
+  const addPointage=recH;                      // +20 fixe (recouvrement platine)
+  const addPente=dropFlanc;                    // +20 proportionnel (flanc × pente)
+  const hDev=lng+addPointage+addPente;         // ex 400+20+20=440
+  const base=hDev;
+  const lgFlanc=hDev, lgFond=hDev;
+  const refendVis=addPente;                    // le cran de pente côté capot
+  const trueLen=hDev;
+  // ANGLES DE PLI
+  const pliFlanc=90;
+  const pliFond=180-penteDegRound;
+  const pliCapot=90+penteDegRound;
+  // bec : coupe en bout de profil (biseau)
+  let becCut=0;
+  if(S.bec==='biseau'){
+    const ab=readNum('angBec');
+    if(ab>0){ becCut = Math.min(prof/Math.tan(ab*Math.PI/180), lng); } // borné à la hauteur, jamais géant
+  }
+  // développé U à plat : rec + flanc(prof) + fond(larg) + flanc(prof) + rec
+  const devPerim = 2*prof + larg + 2*rec;
+  const devU     = 2*prof + larg;
+  const capotW   = larg;                       // capot = largeur fond
+  G={larg,prof,lng,rec,recH,t,penteDegRound,plisFond:pliFond,pliFlanc,pliFond,pliCapot,dropFlanc,refendFond,refendVis,addPointage,addPente,hDev,lgFlanc,lgFond,trueLen,becCut,devPerim,devU,capotW,
+     drop:dropFlanc};
+  return G;
+}
+
+function results(){
+  const g=G;
+  const rows=[
+    ['Développé U à plat', `${g.devPerim.toFixed(0)} × ${g.trueLen.toFixed(0)}`,'mm',true],
+    ['Hauteur développé', g.trueLen.toFixed(0),'mm'],
+    ['Cran pente (côté capot)', g.addPente.toFixed(0),'mm'],
+    ['Pli flancs', g.pliFlanc.toFixed(0),'°'],
+    ['Pli fond', g.pliFond.toFixed(0),'°'],
+    ['Pli capot', g.pliCapot.toFixed(0),'°'],
+    ['Largeur utile U', g.devU.toFixed(0),'mm'],
+    ['Recouvrement (2 flancs)', `2 × ${g.rec.toFixed(0)}`,'mm'],
+    ['Pente', `${g.penteDegRound}° / ${(g.t*100).toFixed(0)}%`,''],
+    ['Capot (soudé/agrafé)', `${g.capotW.toFixed(0)} × ${g.trueLen.toFixed(0)}`,'mm'],
+    ['Recul biseau', g.becCut.toFixed(0),'mm'],
+    ['Déport platine', readNum('deport').toFixed(0),'mm'],
+  ];
+  $('results').innerHTML=rows.map(r=>`
+    <div class="res ${r[3]?'big':''}">
+      <div class="k">${r[0]}</div>
+      <div class="v">${r[1]}${r[2]?`<small>${r[2]}</small>`:''}</div>
+    </div>`).join('');
+}
+
+// ================= RENDU =================
+const cv=$('cv');const ctx=cv.getContext('2d');
+function resize(){const r=cv.getBoundingClientRect();cv.width=r.width*devicePixelRatio;cv.height=r.height*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);}
+window.addEventListener('resize',()=>{resize();render();});
+
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+// ---- 3D orbit ----
+const CAM={rx:-0.45,ry:0.7};
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{if(!drag||S.view!=='3d')return;CAM.ry+=(e.clientX-drag.x)*0.01;CAM.rx+=(e.clientY-drag.y)*0.01;drag={x:e.clientX,y:e.clientY};render();});
+cv.addEventListener('pointerup',()=>drag=null);
+
+function proj(p){
+  const {rx,ry}=CAM;
+  let x=p[0],y=p[1],z=p[2];
+  let X=x*Math.cos(ry)+z*Math.sin(ry);
+  let Z=-x*Math.sin(ry)+z*Math.cos(ry);
+  let Y=y*Math.cos(rx)-Z*Math.sin(rx);
+  return [X,Y];
+}
+function draw3D(){
+  const g=G;const W=cv.clientWidth,Hh=cv.clientHeight;
+  ctx.clearRect(0,0,W,Hh);
+  // Repère couché (comme la photo) : X=largeur(200), Y=hauteur(100, vertical), Z=débord(400, sort du mur)
+  const larg=g.larg, hbox=g.prof, deb=g.lng, bc=g.becCut;
+  const a=Math.atan(g.t);                 // angle de pente
+  const drop=deb*Math.tan(a);             // l'avant descend de deb*tan(pente)
+  // le corps sort du mur en +Z ; l'avant (gueule, z=deb) descend de "drop" ; biseau recule le capot en Z
+  // 8 coins : arrière (platine, z=0) et avant (gueule, z=deb)
+  const raw={
+    // arrière (contre platine) — section largeur x hauteur
+    RbL:[-larg/2,0,0],    RbR:[larg/2,0,0],
+    RhL:[-larg/2,hbox,0], RhR:[larg/2,hbox,0],
+    // avant (gueule) — descend de drop ; capot (haut) reculé de bc si biseau
+    GbL:[-larg/2,-drop,deb],      GbR:[larg/2,-drop,deb],
+    GhL:[-larg/2,hbox-drop,deb-bc], GhR:[larg/2,hbox-drop,deb-bc],
+  };
+  const pts={};for(const k in raw)pts[k]=raw[k];
+  // projection + cadrage
+  let all=Object.values(pts).map(proj);
+  let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  all.forEach(p=>{minx=Math.min(minx,p[0]);miny=Math.min(miny,p[1]);maxx=Math.max(maxx,p[0]);maxy=Math.max(maxy,p[1]);});
+  const sc=Math.min((W-120)/(maxx-minx||1),(Hh-120)/(maxy-miny||1));
+  const cx=W/2-(minx+maxx)/2*sc, cy=Hh/2+(miny+maxy)/2*sc;
+  const S2=k=>{const q=proj(pts[k]);return [q[0]*sc+cx, -q[1]*sc+cy];};
+  function face(keys,color,fill){
+    ctx.beginPath();keys.forEach((k,i)=>{const q=S2(k);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});
+    ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}
+    ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.stroke();
+  }
+  // FOND (dessous) : RbL-RbR-GbR-GbL
+  face(['RbL','RbR','GbR','GbL'],css('--fond'),'rgba(87,192,107,.18)');
+  // FLANC gauche
+  face(['RbL','GbL','GhL','RhL'],css('--flanc'),'rgba(77,166,255,.13)');
+  // FLANC droit
+  face(['RbR','GbR','GhR','RhR'],css('--flanc'),'rgba(77,166,255,.13)');
+  // CAPOT (dessus séparé) : RhL-RhR-GhR-GhL
+  face(['RhL','RhR','GhR','GhL'],css('--capot'),'rgba(229,85,95,.16)');
+  // platine verticale au fond (plan X-Y à z=0)
+  ctx.strokeStyle=css('--muted');ctx.lineWidth=1;ctx.setLineDash([5,4]);
+  const pw=larg*0.8, pv=hbox*1.4;
+  const plPts=[[-larg/2-pw,-pv,0],[larg/2+pw,-pv,0],[larg/2+pw,hbox+pv,0],[-larg/2-pw,hbox+pv,0]];
+  ctx.beginPath();plPts.forEach((p,i)=>{const s=proj(p);const X=s[0]*sc+cx,Y=-s[1]*sc+cy;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.closePath();ctx.stroke();
+  ctx.setLineDash([]);
+  // labels cotes
+  ctx.fillStyle=css('--cote');ctx.font='12px Segoe UI';
+  const mid=(u,v)=>{const p=S2(u),q=S2(v);return [(p[0]+q[0])/2,(p[1]+q[1])/2];};
+  let m;
+  m=mid('RbL','RbR');ctx.fillText('Long '+larg,m[0]-18,m[1]+16);
+  m=mid('RbR','RhR');ctx.fillText('Larg '+hbox,m[0]+6,m[1]);
+  m=mid('RbL','GbL');ctx.fillText('Haut '+deb,m[0]-14,m[1]+14);
+  ctx.fillStyle=css('--muted');ctx.font='11px Segoe UI';
+  ctx.fillText(`↻ glisser · pente ${g.penteDegRound}°`,12,Hh-12);
+}
+
+// ---- développé à plat ----
+function drawFlat(){
+  const g=G;const W=cv.clientWidth,Hh=cv.clientHeight;
+  ctx.clearRect(0,0,W,Hh);
+  const larg=g.larg, prof=g.prof, len=g.trueLen, rec=g.rec, bc=g.becCut;
+  // développé U couché : rec | flanc(prof) | fond(larg) | flanc(prof) | rec  ;  longueur = len
+  const uW=g.devPerim, uL=len;
+  // capot à droite
+  const gap=40;
+  const capW=g.capotW, capL=len;
+  const totalW=uW+gap+capW, totalH=uL+40;
+  const sc=Math.min((W-80)/totalW,(Hh-80)/totalH);
+  const ox=(W-totalW*sc)/2, oy=(Hh-uL*sc)/2;
+  const X=x=>ox+x*sc, Y=y=>oy+y*sc;
+
+  // ===== DÉVELOPPÉ D'UN SEUL TENANT =====
+  // colonnes en X : REC(rec) | FLANC(prof) | FOND(larg) | FLANC(prof) | REC(rec)
+  const xR1=0, xF1=rec, xD1=rec+prof, xD2=rec+prof+larg, xF2=rec+prof+larg+prof, xR2=uW;
+  const bF=g.lng+g.addPointage+g.addPente;    // hauteur totale (bas droit) ex 400+20+20=440
+  const pente=g.addPente;                      // ex 20
+  const yFondPli=g.lng;                        // pli fond à h (400) -> 40 sous le pli (pointage+pente)
+  const yRecPli=g.lng+g.addPente;             // pli rec à 420 -> 20 sous le pli (pointage seul)
+  // Le fond reste à sa hauteur ; les flancs partent en biais de "pente" vers les bords (haut ET bas)
+  // hauteurs de bord bas par X (le fond est le + bas, les bords remontent de la pente)
+  // bord HAUT : y=0 partout (référence platine). bord BAS : fond à bF, flancs remontent en biais vers rec.
+  // contour RECTANGULAIRE PLEIN (matière gardée) — bas droit à bF (440)
+  const yFondBas=yFondPli;                      // pli fond (400)
+  const yRecBas=yRecPli;                        // pli rec (420)
+  ctx.strokeStyle=css('--flanc');ctx.lineWidth=2;ctx.fillStyle='rgba(77,166,255,.04)';ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(X(xR1),Y(0));ctx.lineTo(X(xR2),Y(0));
+  ctx.lineTo(X(xR2),Y(bF));ctx.lineTo(X(xR1),Y(bF));
+  ctx.closePath();ctx.fill();ctx.stroke();
+  // ligne de PLIAGE : rec en bas ; flancs montent en biais vers le fond (fond = point haut)
+  ctx.strokeStyle=css('--fond');ctx.setLineDash([7,4]);ctx.lineWidth=1.6;
+  ctx.beginPath();
+  if(pente<=0){
+    ctx.moveTo(X(xR1),Y(yFondBas));
+    ctx.lineTo(X(xR2),Y(yFondBas));
+  } else {
+    ctx.moveTo(X(xR1),Y(yRecBas));               // rec gauche bas
+    ctx.lineTo(X(xF1),Y(yRecBas));               // jonction rec/flanc
+    ctx.lineTo(X(xD1),Y(yFondBas));              // biais flanc gauche
+    ctx.lineTo(X(xD2),Y(yFondBas));              // fond (pli horizontal)
+    ctx.lineTo(X(xF2),Y(yRecBas));               // biais flanc droit
+    ctx.lineTo(X(xR2),Y(yRecBas));               // rec droit bas
+  }
+  ctx.stroke();ctx.setLineDash([]);
+  // remplissage couleurs par zone (fond en vert)
+  ctx.fillStyle='rgba(87,192,107,.06)';
+  ctx.beginPath();ctx.moveTo(X(xD1),Y(0));ctx.lineTo(X(xD2),Y(0));ctx.lineTo(X(xD2),Y(yFondBas));ctx.lineTo(X(xD1),Y(yFondBas));ctx.closePath();ctx.fill();
+  // labels colonnes
+  ctx.fillStyle=css('--muted');
+  const lab=(cx,txt,f)=>{ctx.font=f;ctx.save();ctx.translate(X(cx),Y(bF/2));ctx.rotate(-Math.PI/2);ctx.fillText(txt,-ctx.measureText(txt).width/2,4);ctx.restore();};
+  lab((xR1+xF1)/2,'REC.','9px Segoe UI');
+  lab((xF1+xD1)/2,'FLANC','11px Segoe UI');
+  lab((xD1+xD2)/2,'FOND','11px Segoe UI');
+  lab((xD2+xF2)/2,'FLANC','11px Segoe UI');
+  lab((xF2+xR2)/2,'REC.','9px Segoe UI');
+  // plis (traçage vertical) aux jonctions
+  ctx.strokeStyle=css('--accent');ctx.setLineDash([6,4]);ctx.lineWidth=1.2;
+  [xF1,xD1,xD2,xF2].forEach(fx=>{ctx.beginPath();ctx.moveTo(X(fx),Y(0));ctx.lineTo(X(fx),Y(bF));ctx.stroke();});
+  ctx.setLineDash([]);
+  // cotes largeur (haut) — remontées pour ne pas chevaucher le titre
+  ctx.fillStyle=css('--cote');ctx.font='9px Segoe UI';ctx.textAlign='center';
+  const yc=Y(0)-6;
+  ctx.fillText('30',X((xR1+xF1)/2),yc);
+  ctx.fillText('100',X((xF1+xD1)/2),yc);
+  ctx.fillText('200',X((xD1+xD2)/2),yc);
+  ctx.fillText('100',X((xD2+xF2)/2),yc);
+  ctx.fillText('30',X((xF2+xR2)/2),yc);
+  // cotes VERTES sous le pli de pointage (retombée pointage + pente par colonne)
+  ctx.fillStyle=css('--fond');ctx.font='9px Segoe UI';ctx.textAlign='center';
+  const yv=Y(bF)+12;                            // sous le bas
+  const retRec=(bF-(pente>0?yRecBas:yFondBas)); // retombée aux rec
+  ctx.fillText(`${g.addPointage.toFixed(0)}`,X((xR1+xF1)/2),yv);   // rec : 20
+  ctx.fillText(`${(g.addPointage+pente).toFixed(0)}`,X((xF1+xD1)/2),yv); // flanc : 40
+  ctx.fillText(`${(g.addPointage+pente).toFixed(0)}`,X((xD1+xD2)/2),yv);   // fond : 40
+  ctx.fillText(`${(g.addPointage+pente).toFixed(0)}`,X((xD2+xF2)/2),yv);   // flanc : 40
+  ctx.fillText(`${g.addPointage.toFixed(0)}`,X((xF2+xR2)/2),yv);   // rec : 20
+  ctx.textAlign='left';
+
+  // ----- capot séparé : rectangle DROIT, raccourci si bec (le dessus est plus court) -----
+  const cx0=uW+gap;
+  const capRaccourci=(S.bec==='biseau'&&bc>0)?Math.min(bc/2, bF*0.7):0; // proportionnel à l'angle (45°→50), plafond sécurité
+  const capH=bF-capRaccourci;
+  ctx.strokeStyle=css('--capot');ctx.fillStyle='rgba(229,85,95,.10)';ctx.lineWidth=1.8;
+  ctx.beginPath();
+  ctx.moveTo(X(cx0),Y(0));
+  ctx.lineTo(X(cx0+capW),Y(0));
+  ctx.lineTo(X(cx0+capW),Y(capH));
+  ctx.lineTo(X(cx0),Y(capH));
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=css('--muted');ctx.font='11px Segoe UI';
+  ctx.fillText('CAPOT',X(cx0+capW/2)-16,Y(capH/2));
+  if(capRaccourci>0){
+    ctx.fillStyle=css('--decoupe');ctx.font='9px Segoe UI';ctx.textAlign='center';
+    ctx.fillText(`-${capRaccourci.toFixed(0)}`,X(cx0+capW/2),Y(capH)+12);
+    ctx.textAlign='left';
+  }
+
+  // ----- bec (DÉCOUPE 45°) : en HAUT, coupe du coin extérieur (rogne REC + FLANC) -----
+  if(S.bec==='biseau' && bc>0){
+    const h=Math.min(bc, rec+prof);            // coupe depuis le coin ext, rogne rec puis flanc
+    ctx.setLineDash([]);
+    // gauche : coin haut extérieur (xR1,0) -> (xR1+h,0) et (xR1,h)
+    const triL=[[xR1,0],[xR1+h,0],[xR1,h]];
+    const triR=[[xR2,0],[xR2-h,0],[xR2,h]];    // droite miroir
+    [triL,triR].forEach(tri=>{
+      ctx.beginPath();
+      ctx.moveTo(X(tri[0][0]),Y(tri[0][1]));
+      ctx.lineTo(X(tri[1][0]),Y(tri[1][1]));
+      ctx.lineTo(X(tri[2][0]),Y(tri[2][1]));
+      ctx.closePath();
+      ctx.fillStyle='rgba(229,85,95,.18)';ctx.fill();
+      ctx.strokeStyle=css('--decoupe');ctx.lineWidth=1.6;ctx.stroke();
+      ctx.save();ctx.clip();
+      ctx.strokeStyle='rgba(229,85,95,.55)';ctx.lineWidth=0.6;
+      const xm=Math.min(tri[0][0],tri[1][0],tri[2][0]);
+      for(let k=-h;k<h;k+=5){ ctx.beginPath();ctx.moveTo(X(xm+k),Y(0));ctx.lineTo(X(xm+k+h),Y(h));ctx.stroke(); }
+      ctx.restore();
+    });
+    ctx.fillStyle=css('--decoupe');ctx.font='9px Segoe UI';ctx.textAlign='center';
+    ctx.fillText(`bec ${h.toFixed(0)}`,X((xR1+xF1)/2),Y(0)+14);
+    ctx.fillText(`bec ${h.toFixed(0)}`,X((xF2+xR2)/2),Y(0)+14);
+    ctx.textAlign='left';
+  }
+
+  // cotes (titres séparés pour éviter le chevauchement)
+  ctx.fillStyle=css('--cote');ctx.font='11px Segoe UI';
+  ctx.textAlign='left';
+  ctx.fillText(`dév U ${uW.toFixed(0)} × ${bF.toFixed(0)} mm (recouvr. compris)`,X(0),Y(0)-20);
+  ctx.fillText(`capot ${capW.toFixed(0)} × ${capH.toFixed(0)}`,X(cx0),Y(0)-20);
+  ctx.textAlign='left';
+}
+
+function render(){ if(S.view==='3d')draw3D(); else drawFlat(); }
+function recompute(){ compute(); results(); render(); }
+
+resize();recompute();
+</script>
+</body>
+</html>

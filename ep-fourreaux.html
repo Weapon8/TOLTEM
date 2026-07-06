@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="EP / Fourreaux">
+<meta name="theme-color" content="#14181F">
+<title>Calcul EP / Fourreaux — TolTem</title>
+<style>
+  :root{
+    --bg:#14181F; --panel:#1B212B; --panel2:#222A36;
+    --line:#2E3947; --orange:#FF7A1A; --orange-soft:#ffa05a;
+    --txt:#E7ECF2; --muted:#8A97A8; --green:#39d353; --red:#ff5d5d;
+    --ep:#39d353; --fx:#ff5d5d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background:var(--bg);color:var(--txt);
+    min-height:100vh;padding:18px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:720px;margin:0 auto}
+  header{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+  h1{font-size:1.55rem;font-weight:800;letter-spacing:.5px}
+  h1 .dot{color:var(--orange)}
+  .sub{color:var(--muted);font-size:.8rem;margin-bottom:18px}
+
+  .modes{display:flex;gap:10px;margin-bottom:16px}
+  .mode{
+    flex:1;padding:14px;border-radius:12px;border:2px solid var(--line);
+    background:var(--panel);cursor:pointer;text-align:center;
+    font-weight:700;font-size:1.05rem;transition:.15s;
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .mode small{font-weight:400;font-size:.72rem;color:var(--muted)}
+  .mode.ep.active{border-color:var(--ep);box-shadow:0 0 0 1px var(--ep) inset}
+  .mode.fx.active{border-color:var(--fx);box-shadow:0 0 0 1px var(--fx) inset}
+  .mode.ep.active .tag{color:var(--ep)}
+  .mode.fx.active .tag{color:var(--fx)}
+  .mode:not(.active){opacity:.55}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;padding:20px;margin-bottom:16px;
+  }
+  label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .inputrow{display:flex;gap:10px}
+  input[type=number]{
+    flex:1;background:var(--bg);border:2px solid var(--line);
+    border-radius:12px;color:var(--txt);font-size:1.9rem;font-weight:700;
+    padding:12px 16px;width:100%;text-align:center;
+  }
+  input:focus{outline:none;border-color:var(--orange)}
+  .unit{display:flex;align-items:center;color:var(--muted);font-weight:700;font-size:1.1rem;padding:0 4px}
+
+  .quick{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .quick button{
+    background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:9px;padding:7px 11px;font-size:.85rem;cursor:pointer;font-weight:600;
+  }
+  .quick button:active{background:var(--orange);color:#000;border-color:var(--orange)}
+
+  .results{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .res{
+    background:var(--panel2);border:1px solid var(--line);border-radius:14px;
+    padding:16px;position:relative;overflow:hidden;
+  }
+  .res::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--orange)}
+  .res .k{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px;line-height:1.3}
+  .res .v{font-size:1.9rem;font-weight:800;color:var(--orange-soft);line-height:1}
+  .res .v small{font-size:.85rem;color:var(--muted);font-weight:600;margin-left:3px}
+  .res.big{grid-column:1 / -1}
+  .res.big::before{width:5px;background:var(--green)}
+  .res.big .v{color:var(--green);font-size:2.4rem}
+  .res.fxbig::before{background:var(--red)}
+  .res.fxbig .v{color:#ff9a9a}
+
+  .meta{margin-top:14px;font-size:.75rem;color:var(--muted);line-height:1.6;
+    background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:12px}
+  .meta b{color:var(--txt)}
+  .exact{color:var(--green);font-weight:700}
+  .interp{color:var(--orange);font-weight:700}
+
+  /* pastille recouvrement dans la case Développé */
+  .rec-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:.72rem;font-weight:800;letter-spacing:.4px;
+    padding:4px 10px;border-radius:20px;margin-top:10px;
+    border:1.5px solid currentColor;text-transform:uppercase;
+  }
+  .rec-pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+  .rec-15{color:#4fc3f7}   /* recouvrement 15mm - bleu   */
+  .rec-20{color:#ffca28}   /* recouvrement 20mm - jaune  */
+  .rec-30{color:#ff7043}   /* recouvrement 30mm - orange rouge */
+
+  .foot{text-align:center;color:var(--muted);font-size:.72rem;margin-top:6px}
+  @media(max-width:420px){
+    .results{grid-template-columns:1fr}
+    input[type=number]{font-size:1.6rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Calcul <span class="dot">Développé</span></h1>
+  </header>
+  <div class="sub">EP zinc/galva &amp; Fourreaux galva/zinc — turret Prima Power EX5</div>
+
+  <div class="modes">
+    <div class="mode ep active" id="mEP" onclick="setMode('ep')">
+      <span class="tag">EP</span>
+      <small>Zinc / Galva</small>
+    </div>
+    <div class="mode fx" id="mFX" onclick="setMode('fx')">
+      <span class="tag">FOURREAUX</span>
+      <small>Galva / Zinc</small>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Diamètre / Recouvrement (mm)</label>
+    <div class="inputrow">
+      <input type="number" id="dia" value="100" min="10" step="5" oninput="calc()" inputmode="numeric">
+      <span class="unit">mm</span>
+    </div>
+    <div class="quick" id="quick"></div>
+  </div>
+
+  <div class="results" id="out"></div>
+
+  <div class="foot">Made with love by weapon666 pour TolTem</div>
+</div>
+
+<script>
+/* ===== Données exactes issues des tableaux photographiés ===== */
+
+// EP zinc/galva : recouvrement -> [developpe, platine, axe, rayon]
+const EP = {
+  50:[166,290,145,25.5], 60:[197,300,150,30.5], 70:[228,310,155,35.5],
+  75:[244,315,157.5,38], 80:[260,320,160,40.5], 85:[276,325,162.5,43],
+  90:[296,330,165,45], 95:[312,335,167.5,48], 100:[328,340,170,50],
+  110:[359,350,175,55], 115:[375,355,177.5,58], 120:[390,360,180,60],
+  125:[406,365,182.5,63], 130:[422,370,185,65], 140:[453,380,190,70],
+  150:[485,390,195,75], 160:[516,400,200,80], 170:[548,410,205,85],
+  180:[579,420,210,90], 190:[610,430,215,95], 200:[642,440,220,100],
+  250:[809,490,245,125], 300:[966,540,270,150], 350:[1123,590,295,176],
+  400:[1280,640,320,200], 500:[1594,740,370,250]
+};
+
+// Fourreaux galva/zinc
+const FX = {
+  50:[178,290,145,27.5], 60:[209,300,150,32.5], 70:[241,310,155,37.5],
+  75:[257,315,157.5,39], 80:[272,320,160,42.5], 85:[288,325,162.5,45],
+  90:[309,333.3,166.65,47.5], 95:[325,333.3,166.65,49], 100:[340,333.3,166.65,52.5],
+  110:[372,350,175,57.5], 115:[387,355,177.5,59], 120:[403,360,180,62.5],
+  125:[419,365,182.5,65], 130:[435,370,185,67.5], 140:[466,380,190,72.5],
+  150:[497,390,195,77.5], 160:[529,400,200,82.5], 170:[560,410,205,85],
+  180:[592,420,210,92.5], 190:[623,430,215,97.5], 200:[655,440,220,102.5],
+  230:[761,470,235,117.5], 250:[821,500,250,127.5], 300:[978,540,270,152.5],
+  350:[1136,600,300,177.5], 400:[1293,640,320,202.5], 500:[1607,740,370,252.5],
+  550:[1765,860,430,null]
+};
+
+const PI = Math.PI;
+
+/* joint de recouvrement K (developpe = pi*D + K) par tranche */
+function jointK(mode,d){
+  if(mode==='ep'){
+    if(d<=85) return 8.7;       // recouvrement 15mm
+    if(d<=200) return 13.5;     // recouvrement 20mm
+    return 23.5;                // recouvrement 30mm
+  }else{
+    if(d<=85) return 21.0;      // 15mm
+    if(d<=200) return 26.2;     // 20mm
+    return 36.2;                // 30mm
+  }
+}
+/* offset rayon grignotage (rayon = D/2 + off) */
+function rayonOff(mode,d){
+  if(mode==='ep'){ return (d<=90)?0.5:0; }
+  return 2.5; // fourreaux : constant +2.5
+}
+
+let mode='ep';
+function tbl(){ return mode==='ep'?EP:FX; }
+
+function setMode(m){
+  mode=m;
+  document.getElementById('mEP').classList.toggle('active',m==='ep');
+  document.getElementById('mFX').classList.toggle('active',m==='fx');
+  buildQuick();
+  calc();
+}
+
+function buildQuick(){
+  const q=document.getElementById('quick');
+  const keys=[50,80,100,125,150,180,200,250,300,400,500];
+  q.innerHTML=keys.map(k=>`<button onclick="setDia(${k})">${k}</button>`).join('');
+}
+function setDia(v){ document.getElementById('dia').value=v; calc(); }
+
+function fmt(n){
+  if(n===null||n===undefined||isNaN(n)) return '—';
+  return (Math.round(n*10)/10).toString().replace(/\.0$/,'');
+}
+
+function calc(){
+  const d=parseFloat(document.getElementById('dia').value);
+  const out=document.getElementById('out');
+  if(!d||d<=0){ out.innerHTML=''; return; }
+
+  const t=tbl();
+  let dev,pla,axe,ray,exact=false;
+
+  if(t[d]){
+    // valeur exacte du tableau
+    [dev,pla,axe,ray]=t[d];
+    exact=true;
+  }else{
+    // formule (interpolation logique du tableau)
+    dev = PI*d + jointK(mode,d);
+    pla = d + 240;
+    axe = pla/2;
+    ray = d/2 + rayonOff(mode,d);
+    exact=false;
+  }
+
+  // recouvrement selon la tranche de diamètre
+  let recVal, recCls;
+  if(d<=85){ recVal=15; recCls='rec-15'; }
+  else if(d<=200){ recVal=20; recCls='rec-20'; }
+  else { recVal=30; recCls='rec-30'; }
+  const recPill = `<span class="rec-pill ${recCls}">Recouvrement ${recVal} mm</span>`;
+
+  const bigClass = mode==='ep' ? 'res big' : 'res big fxbig';
+  const badge = exact
+    ? '<span class="exact">✔ valeur exacte du tableau</span>'
+    : '<span class="interp">≈ calculée par formule (hors barème)</span>';
+
+  out.innerHTML = `
+    <div class="${bigClass}">
+      <div class="k">Développé en mm</div>
+      <div class="v">${fmt(dev)}<small>mm</small></div>
+      ${recPill}
+    </div>
+    <div class="res">
+      <div class="k">Platine dim. au carré</div>
+      <div class="v">${fmt(pla)}<small>mm</small></div>
+    </div>
+    <div class="res">
+      <div class="k">Axes platines X , Y</div>
+      <div class="v">${fmt(axe)}<small>mm</small></div>
+    </div>
+    <div class="res">
+      <div class="k">Rayon du grignotage</div>
+      <div class="v">${fmt(ray)}<small>mm</small></div>
+    </div>
+    <div class="res" style="--o">
+      <div class="k">Ø saisi</div>
+      <div class="v">${fmt(d)}<small>mm</small></div>
+    </div>
+    <div class="meta" style="grid-column:1/-1">
+      ${badge}<br>
+      <b>Formules :</b> Développé = π·Ø + joint (${mode==='ep'?'EP':'FX'} ${d<=85?'15mm':d<=200?'20mm':'30mm'}) ·
+      Platine = Ø + 240 · Axe = Platine ÷ 2 · Rayon = Ø ÷ 2 ${mode==='fx'?'+ 2,5':(d<=90?'+ 0,5':'')}
+    </div>
+  `;
+}
+
+buildQuick();
+calc();
+</script>
+</body>
+</html>
