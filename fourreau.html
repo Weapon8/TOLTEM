@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#14181F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Fourreau 1.5 — TolTem</title>
+<style>
+  :root{
+    --bg:#14181F; --pan:#1b212b; --pan2:#222b37; --line:#2e3a49;
+    --acc:#FF7A1A; --txt:#e6ebf2; --dim:#8fa0b5;
+    --haut:#FF7A1A; --bas:#37A9FF; --gauche:#4ED88A; --droite:#C08BFF;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--txt);font:14px/1.4 "Segoe UI",system-ui,Arial,sans-serif}
+  header{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#171d26,#14181F)}
+  header .logo{width:12px;height:24px;background:var(--acc);border-radius:2px;box-shadow:0 0 12px rgba(255,122,26,.5)}
+  header h1{font-size:17px;margin:0;letter-spacing:1px;font-weight:700}
+  header h1 span{color:var(--acc)}
+  header .sub{color:var(--dim);font-size:12px;margin-left:auto}
+  .wrap{display:flex;min-height:calc(100% - 50px)}
+  aside{width:270px;flex:0 0 270px;background:var(--pan);border-right:1px solid var(--line);padding:14px;overflow:auto}
+  main{flex:1;padding:14px 16px;overflow:auto}
+  .grp{margin-bottom:16px;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--pan2)}
+  .grp h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--acc)}
+  .row{display:flex;align-items:center;justify-content:space-between;margin:7px 0;gap:8px}
+  .row label{color:var(--dim);font-size:13px}
+  .row input[type=number]{width:92px;background:#0f141b;border:1px solid var(--line);color:var(--txt);border-radius:5px;padding:6px 8px;font:13px inherit;text-align:right}
+  .row input:focus{outline:none;border-color:var(--acc)}
+  .row input:disabled{opacity:.45}
+  select{background:#0f141b;border:1px solid var(--line);color:var(--txt);border-radius:5px;padding:6px 8px;font:13px inherit}
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;background:#0f141b;color:var(--dim);border:0;padding:7px 4px;cursor:pointer;font:12px inherit}
+  .seg button.on{background:var(--acc);color:#111;font-weight:700}
+  .chk{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  .chk input{accent-color:var(--acc);width:16px;height:16px}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tabs button{background:var(--pan2);border:1px solid var(--line);color:var(--dim);padding:8px 16px;border-radius:7px;cursor:pointer;font:13px inherit;font-weight:600}
+  .tabs button.on{background:var(--acc);color:#111;border-color:var(--acc)}
+  .view{display:none}
+  .view.on{display:block}
+  .canvasbox{border:1px solid var(--line);border-radius:10px;background:#0f141b;position:relative;overflow:hidden}
+  canvas{display:block;width:100%;touch-action:none}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 2px 0;font-size:13px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+  .toolbar{display:flex;gap:6px;flex-wrap:wrap;padding:10px;border-bottom:1px solid var(--line);background:var(--pan)}
+  .toolbar button{background:var(--pan2);border:1px solid var(--line);color:var(--txt);padding:6px 12px;border-radius:6px;cursor:pointer;font:12px inherit}
+  .toolbar button:hover{border-color:var(--acc)}
+  .hint{color:var(--dim);font-size:11.5px;margin-left:auto;align-self:center;padding-right:4px}
+  footer{padding:10px 18px;border-top:1px solid var(--line);color:var(--dim);font-size:12px;text-align:center}
+  footer b{color:var(--acc)}
+  .info{display:flex;gap:18px;flex-wrap:wrap;margin:10px 2px 0;font-size:12.5px;color:var(--dim)}
+  .info b{color:var(--txt)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"></div>
+  <h1>FOURREAU <span>1.5</span></h1>
+  <div class="sub">carré / rectangle · développé 4 éléments · pli platine · vue 3D</div>
+</header>
+
+<div class="wrap">
+  <aside>
+    <div class="grp">
+      <h3>Section</h3>
+      <label class="chk" style="margin-bottom:8px"><input type="checkbox" id="carre"> Carré (A = B)</label>
+      <div class="row"><label>A — long. (sens pente)</label><input type="number" id="A" value="400" min="1" step="5"></div>
+      <div class="row"><label>B — largeur</label><input type="number" id="B" value="300" min="1" step="5"></div>
+      <div class="row"><label>H — haut. mini (côté haut)</label><input type="number" id="H" value="150" min="1" step="5"></div>
+    </div>
+
+    <div class="grp">
+      <h3>Pente du toit</h3>
+      <div class="row"><label>Valeur</label><input type="number" id="penteVal" value="30" min="0" step="0.5"></div>
+      <div class="row"><label>Unité</label>
+        <div class="seg" style="width:120px">
+          <button id="uDeg" class="on" data-u="deg">°</button>
+          <button id="uPct" data-u="pct">%</button>
+        </div>
+      </div>
+      <div class="info" style="margin-top:4px"><span id="penteEq"></span></div>
+    </div>
+
+    <div class="grp">
+      <h3>Pli platine (bas)</h3>
+      <div class="row"><label>Largeur platine</label><input type="number" id="platine" value="40" min="0" step="2"></div>
+    </div>
+
+    <div class="grp">
+      <h3>Pli(s) du haut</h3>
+      <div class="seg" style="margin-bottom:8px">
+        <button id="p1" class="on" data-n="1">1 pli</button>
+        <button id="p2" data-n="2">2 plis</button>
+      </div>
+      <div class="row"><label>Pli 1</label><input type="number" id="pli1" value="15" min="0" step="1"></div>
+      <div class="row" id="rowPli2"><label>Pli 2</label><input type="number" id="pli2" value="10" min="0" step="1"></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="tabs">
+      <button id="tabFlat" class="on">Mise à plat</button>
+      <button id="tab3d">Vue 3D</button>
+    </div>
+
+    <div id="viewFlat" class="view on">
+      <div class="canvasbox"><canvas id="cvFlat"></canvas></div>
+    </div>
+
+    <div id="view3d" class="view">
+      <div class="canvasbox">
+        <div class="toolbar">
+          <button data-p="iso">ISO</button>
+          <button data-p="dessus">Dessus</button>
+          <button data-p="haut">Face haut</button>
+          <button data-p="bas">Face bas</button>
+          <button data-p="cote">Côté</button>
+          <button id="reset3d">Recentrer</button>
+          <span class="hint">glisser = orienter · molette = zoom</span>
+        </div>
+        <canvas id="cv3d"></canvas>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i style="background:var(--haut)"></i>Haut de toit</span>
+      <span><i style="background:var(--bas)"></i>Bas de toit</span>
+      <span><i style="background:var(--gauche)"></i>Gauche</span>
+      <span><i style="background:var(--droite)"></i>Droite</span>
+      <span style="color:#ff5a4d"><b style="color:#ff5a4d">∡</b>&nbsp;angle de pliage (retour à plat)</span>
+    </div>
+    <div class="info" id="infoLine"></div>
+  </main>
+</div>
+
+<footer>Made with love by <b>weapon666</b> pour <b>TolTem</b></footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const A_=$('A'),B_=$('B'),H_=$('H'),PENTE=$('penteVal'),PLAT=$('platine'),PLI1=$('pli1'),PLI2=$('pli2');
+let penteUnit='deg', pliMode=1, tab='flat';
+let cam={az:-0.62, el:0.38, scale:1};   // vue 3D
+const COL={haut:'#FF7A1A',bas:'#37A9FF',gauche:'#4ED88A',droite:'#C08BFF'};
+
+/* ---------- lecture paramètres ---------- */
+function P(){
+  let A=+A_.value||1, B=+B_.value||1, H=+H_.value||1;
+  if($('carre').checked){ B=A; B_.value=A; }
+  let v=+PENTE.value||0;
+  let alpha = penteUnit==='deg' ? v*Math.PI/180 : Math.atan(v/100);
+  return {A,B,H,alpha,p:+PLAT.value||0,pli1:+PLI1.value||0,pli2:pliMode===2?(+PLI2.value||0):0,pliMode};
+}
+function derive(pr){
+  const drop = pr.A*Math.tan(pr.alpha);
+  return {drop, hHaut:pr.H, hBas:pr.H+drop,
+          zbHaut:(pr.A/2)*Math.tan(pr.alpha), zbBas:-(pr.A/2)*Math.tan(pr.alpha),
+          zTop:(pr.A/2)*Math.tan(pr.alpha)+pr.H};
+}
+const fmt = n => (Math.round(n*10)/10).toString();
+function penteTxt(pr){
+  const deg=pr.alpha*180/Math.PI, pct=Math.tan(pr.alpha)*100;
+  return `${fmt(deg)}° / ${fmt(pct)} %`;
+}
+
+/* ============================================================
+   MISE A PLAT
+   ============================================================ */
+const cvF=$('cvFlat'), gf=cvF.getContext('2d');
+function tint(hex,f){ // éclaircir/assombrir + alpha renvoyé en rgba
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${f})`;
+}
+
+// helpers dimensions (coords écran)
+function arrow(g,x,y,ang){g.save();g.translate(x,y);g.rotate(ang);g.beginPath();g.moveTo(0,0);g.lineTo(7,3);g.lineTo(7,-3);g.closePath();g.fill();g.restore();}
+function dimText(g,x,y,t){
+  g.font='11px Segoe UI'; const w=g.measureText(t).width;
+  g.fillStyle='#0f141b'; g.fillRect(x-w/2-4,y-8,w+8,15);
+  g.fillStyle='#e6ebf2'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,x,y);
+}
+function dimH(g,xa,xb,yShape,yDim,t){ // dim horizontale, témoins verticaux
+  g.strokeStyle='#6c7a8c';g.fillStyle='#6c7a8c';g.lineWidth=1;
+  g.beginPath();g.moveTo(xa,yShape);g.lineTo(xa,yDim);g.moveTo(xb,yShape);g.lineTo(xb,yDim);g.stroke();
+  g.beginPath();g.moveTo(xa,yDim);g.lineTo(xb,yDim);g.stroke();
+  arrow(g,xa,yDim,0);arrow(g,xb,yDim,Math.PI);
+  dimText(g,(xa+xb)/2,yDim,t);
+}
+function dimV(g,ya,yb,xShape,xDim,t){
+  g.strokeStyle='#6c7a8c';g.fillStyle='#6c7a8c';g.lineWidth=1;
+  g.beginPath();g.moveTo(xShape,ya);g.lineTo(xDim,ya);g.moveTo(xShape,yb);g.lineTo(xDim,yb);g.stroke();
+  g.beginPath();g.moveTo(xDim,ya);g.lineTo(xDim,yb);g.stroke();
+  arrow(g,xDim,ya,Math.PI/2);arrow(g,xDim,yb,-Math.PI/2);
+  g.save();g.translate(xDim,(ya+yb)/2);g.rotate(-Math.PI/2);dimText(g,0,0,t);g.restore();
+}
+function angleMark(g,x,y,a0,a1,r,t){
+  g.strokeStyle=COL.gauche;g.lineWidth=1.4;
+  g.beginPath();g.arc(x,y,r,a0,a1,a0>a1);g.stroke();
+  const am=(a0+a1)/2;
+  dimText(g,x+Math.cos(am)*(r+18),y+Math.sin(am)*(r+16),t);
+}
+function rightAngle(g,x,y,dx,dy){ // petit symbole 90°
+  const s=9;g.strokeStyle='#6c7a8c';g.lineWidth=1;
+  g.beginPath();g.moveTo(x+dx*s,y);g.lineTo(x+dx*s,y+dy*s);g.lineTo(x,y+dy*s);g.stroke();
+}
+// libellé aligné (l/c/r) avec fond
+function labelL(g,x,y,t,color,align){
+  g.font='11px Segoe UI'; const w=g.measureText(t).width; align=align||'left';
+  let lx = align==='left'? x-3 : align==='right'? x-w-3 : x-w/2-3;
+  g.fillStyle='#0f141b'; g.fillRect(lx,y-8,w+6,15);
+  g.fillStyle=color; g.textAlign=align; g.textBaseline='middle'; g.fillText(t,x,y);
+}
+// cote de pli : trait de mesure + n° (gris) + angle de pliage (rouge) en dessous
+function pliCote(g, ya, yb, xEdge, xLab, mainT, angT, dir){
+  dir=dir||1; // 1 = label à droite, -1 = à gauche
+  g.strokeStyle='#6c7a8c';g.fillStyle='#6c7a8c';g.lineWidth=1;
+  g.beginPath();g.moveTo(xEdge,ya);g.lineTo(xLab,ya);g.moveTo(xEdge,yb);g.lineTo(xLab,yb);g.stroke();
+  g.beginPath();g.moveTo(xLab,ya);g.lineTo(xLab,yb);g.stroke();
+  arrow(g,xLab,ya,Math.PI/2);arrow(g,xLab,yb,-Math.PI/2);
+  const my=(ya+yb)/2, tx=xLab+dir*7, al=dir>0?'left':'right';
+  labelL(g,tx,my-6,mainT,'#e6ebf2',al);
+  labelL(g,tx,my+8,angT,'#ff5a4d',al);
+}
+// callout de pli fin (bande mince) : ligne de rappel vers un libellé déporté
+function pliCallout(g, xBand, yBand, xLab, yLab, mainT, angT, dir){
+  dir=dir||1;
+  g.strokeStyle='#6c7a8c';g.fillStyle='#6c7a8c';g.lineWidth=1;
+  g.beginPath();g.moveTo(xBand,yBand);g.lineTo(xLab,yLab);g.lineTo(xLab+dir*20,yLab);g.stroke();
+  const tx=xLab+dir*24, al=dir>0?'left':'right';
+  labelL(g,tx,yLab-6,mainT,'#e6ebf2',al);
+  labelL(g,tx,yLab+8,angT,'#ff5a4d',al);
+}
+
+function drawFlat(){
+  const pr=P(), d=derive(pr);
+  const plis=pr.pli1+pr.pli2;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const cssW=cvF.clientWidth;
+
+  // gabarit commun (échelle unique pour comparer les pièces)
+  const maxExtX=Math.max(pr.A,pr.B);
+  const maxExtY=d.hBas+plis+pr.p;
+
+  // colonnes adaptatives + fit-largeur (pas de zoom microscopique)
+  const cols = cssW>=680 ? 2 : 1;
+  const GAP=18, PADL=42, PADR=72, PADT=34, PADB=52;
+  const cellW=(cssW-(cols+1)*GAP)/cols;
+  const areaW=cellW-PADL-PADR;
+  let S=areaW/maxExtX;
+  S=Math.min(S, 320/maxExtY);        // borne la hauteur (évite un canvas géant)
+  S=Math.max(0.06,Math.min(S,1.4));
+  const cellH=maxExtY*S+PADT+PADB;
+  const rows=Math.ceil(4/cols);
+  const cssH=Math.max(340, rows*cellH+(rows+1)*GAP);
+
+  cvF.width=cssW*dpr; cvF.height=cssH*dpr; cvF.style.height=cssH+'px';
+  gf.setTransform(dpr,0,0,dpr,0,0);
+  gf.clearRect(0,0,cssW,cssH);
+
+  const order=['haut','bas','gauche','droite'], cellOf={};
+  order.forEach((k,i)=>cellOf[k]=[i%cols, Math.floor(i/cols)]);
+
+  function placer(kind, minX,maxX,minY,maxY){
+    const [col,row]=cellOf[kind];
+    const cellX0=GAP+col*(cellW+GAP), cellY0=GAP+row*(cellH+GAP);
+    const wpx=(maxX-minX)*S, hpx=(maxY-minY)*S, areaH=cellH-PADT-PADB;
+    const offX=cellX0+PADL+Math.max(0,(areaW-wpx)/2);
+    const offYtop=cellY0+PADT+Math.max(0,(areaH-hpx)/2);
+    const ox=offX-minX*S, oy=offYtop+maxY*S;
+    return (x,y)=>[ox+x*S, oy-y*S];
+  }
+
+  // -------- RECT (haut / bas) --------
+  function rect(kind,color,width,height){
+    const minY=-pr.p, maxY=height+plis;
+    const T=placer(kind,0,width,minY,maxY);
+    // corps mur
+    gf.beginPath();let q=T(0,0);gf.moveTo(q[0],q[1]);[[width,0],[width,height],[0,height]].forEach(p=>{q=T(p[0],p[1]);gf.lineTo(q[0],q[1]);});gf.closePath();
+    gf.fillStyle=tint(color,.18);gf.fill();gf.strokeStyle=color;gf.lineWidth=2;gf.stroke();
+    // platine (bas)
+    if(pr.p>0){gf.beginPath();q=T(0,0);gf.moveTo(q[0],q[1]);[[width,0],[width,-pr.p],[0,-pr.p]].forEach(p=>{q=T(p[0],p[1]);gf.lineTo(q[0],q[1]);});gf.closePath();
+      gf.fillStyle=tint(color,.30);gf.fill();gf.strokeStyle=color;gf.lineWidth=1.4;gf.stroke();}
+    // plis haut
+    let base=height;
+    [[pr.pli1,.42],[pr.pli2,.55]].forEach(([pv,al])=>{ if(pv>0){
+      gf.beginPath();q=T(0,base);gf.moveTo(q[0],q[1]);[[width,base],[width,base+pv],[0,base+pv]].forEach(p=>{q=T(p[0],p[1]);gf.lineTo(q[0],q[1]);});gf.closePath();
+      gf.fillStyle=tint(color,al*.4);gf.fill();gf.setLineDash([4,3]);gf.strokeStyle=color;gf.lineWidth=1;gf.stroke();gf.setLineDash([]);
+      base+=pv;}});
+    // lignes de pli (pointillé) sur fond mur
+    gf.setLineDash([4,3]);gf.strokeStyle=tint(color,.7);gf.lineWidth=1;
+    let a=T(0,0),b=T(width,0);gf.beginPath();gf.moveTo(a[0],a[1]);gf.lineTo(b[0],b[1]);       // pli platine
+    a=T(0,height);b=T(width,height);gf.moveTo(a[0],a[1]);gf.lineTo(b[0],b[1]);gf.stroke();     // pli haut1
+    gf.setLineDash([]);
+    // titre pièce
+    q=T(width/2,height/2);gf.fillStyle=color;gf.font='bold 12px Segoe UI';gf.textAlign='center';gf.textBaseline='middle';
+    gf.fillText(kind==='haut'?'HAUT DE TOIT':'BAS DE TOIT',q[0],q[1]);
+
+    // ---- cotes ----
+    const aDeg=pr.alpha*180/Math.PI;
+    const platAng = kind==='haut' ? 90-aDeg : 90+aDeg;   // amont 90-p / aval 90+p
+    const bl=T(0,0),br=T(width,0),tl=T(0,height),plBot=T(0,-pr.p);
+    dimH(gf, plBot[0], T(width,-pr.p)[0], plBot[1], plBot[1]+34, 'B '+fmt(width)); // largeur
+    dimV(gf, tl[1], bl[1], bl[0], bl[0]-30, 'H '+fmt(height));                     // hauteur mur
+    // platine (droite bas) + angle de pliage rouge
+    if(pr.p>0) pliCote(gf, T(width,0)[1], T(width,-pr.p)[1], br[0], br[0]+24, 'pl '+fmt(pr.p), fmt(platAng)+'°', 1);
+    // plis haut : callouts déportés au-dessus à droite (angle 90°)
+    const xR=T(width,height+plis)[0];
+    let yb=height, lab=T(width,height+plis)[1]-4;
+    if(pr.pli1>0){const m=T(width,yb+pr.pli1/2);pliCallout(gf,m[0],m[1],xR+8,lab,'p1 '+fmt(pr.pli1),'90°',1);yb+=pr.pli1;lab-=26;}
+    if(pr.pli2>0){const m=T(width,yb+pr.pli2/2);pliCallout(gf,m[0],m[1],xR+8,lab,'p2 '+fmt(pr.pli2),'90°',1);}
+    rightAngle(gf,bl[0],bl[1],1,1);
+  }
+
+  // -------- TRAPEZE (gauche / droite) --------
+  function trap(kind,color,mirror){
+    // sommets locaux : P1(0,0) bas-bas  P2(A,drop) bas-haut  P3(A,hBas) top-haut  P4(0,hBas) top-bas
+    const A=pr.A, hBas=d.hBas, drop=d.drop, hHaut=d.hHaut;
+    const minY=-pr.p, maxY=hBas+plis;
+    const T0=placer(kind,0,A,minY,maxY);
+    // miroir horizontal pour "droite"
+    const T=(x,y)=> mirror? T0(A-x,y) : T0(x,y);
+    // corps
+    const P1=[0,0],P2=[A,drop],P3=[A,hBas],P4=[0,hBas];
+    function poly(pts,fill,stroke,lw){gf.beginPath();let q=T(pts[0][0],pts[0][1]);gf.moveTo(q[0],q[1]);
+      for(let i=1;i<pts.length;i++){q=T(pts[i][0],pts[i][1]);gf.lineTo(q[0],q[1]);}gf.closePath();
+      if(fill){gf.fillStyle=fill;gf.fill();}gf.strokeStyle=stroke;gf.lineWidth=lw;gf.stroke();}
+    poly([P1,P2,P3,P4],tint(color,.18),color,2);
+    // platine sous bord bas (offset perpendiculaire)
+    if(pr.p>0){
+      const L=Math.sqrt(A*A+drop*drop)||1; const nx=drop/L, ny=-A/L; // normale bas
+      const q1=[P1[0]+nx*pr.p,P1[1]+ny*pr.p], q2=[P2[0]+nx*pr.p,P2[1]+ny*pr.p];
+      poly([P1,P2,q2,q1],tint(color,.30),color,1.4);
+    }
+    // plis haut (au-dessus P4-P3, horizontal)
+    let base=hBas;
+    [[pr.pli1,.42],[pr.pli2,.55]].forEach(([pv,al])=>{if(pv>0){
+      gf.setLineDash([4,3]);poly([[0,base],[A,base],[A,base+pv],[0,base+pv]],tint(color,al*.4),color,1);gf.setLineDash([]);base+=pv;}});
+    // lignes plis
+    gf.setLineDash([4,3]);gf.strokeStyle=tint(color,.7);gf.lineWidth=1;
+    let a=T(P1[0],P1[1]),b=T(P2[0],P2[1]);gf.beginPath();gf.moveTo(a[0],a[1]);gf.lineTo(b[0],b[1]); // pli platine (incliné)
+    a=T(P4[0],P4[1]);b=T(P3[0],P3[1]);gf.moveTo(a[0],a[1]);gf.lineTo(b[0],b[1]);gf.stroke();
+    gf.setLineDash([]);
+    // titre
+    let q=T(A/2,hBas*0.45);gf.fillStyle=color;gf.font='bold 12px Segoe UI';gf.textAlign='center';gf.textBaseline='middle';
+    gf.fillText(kind==='gauche'?'GAUCHE':'DROITE',q[0],q[1]);
+
+    // ---- cotes ----
+    // hauteurs : bas (côté P1/P4) et haut (côté P2/P3)
+    // dim hBas sur bord vertical bas-de-toit (P1-P4)
+    const vBas_top=T(P4[0],P4[1]), vBas_bot=T(P1[0],P1[1]);
+    const vHaut_top=T(P3[0],P3[1]), vHaut_bot=T(P2[0],P2[1]);
+    // côté gauche écran = plus petit x
+    const leftIsBas = vBas_bot[0] < vHaut_bot[0];
+    if(leftIsBas){
+      dimV(gf,vBas_top[1],vBas_bot[1],vBas_bot[0],vBas_bot[0]-30,'hB '+fmt(hBas));
+      dimV(gf,vHaut_top[1],vHaut_bot[1],vHaut_bot[0],vHaut_bot[0]+30,'hH '+fmt(hHaut));
+    }else{
+      dimV(gf,vHaut_top[1],vHaut_bot[1],vHaut_bot[0],vHaut_bot[0]-30,'hH '+fmt(hHaut));
+      dimV(gf,vBas_top[1],vBas_bot[1],vBas_bot[0],vBas_bot[0]+30,'hB '+fmt(hBas));
+    }
+    // A (base horizontale) sous les 2 pieds bas
+    const yBase=Math.max(vBas_bot[1],vHaut_bot[1])+ (pr.p>0?26:20);
+    dimH(gf, vBas_bot[0], vHaut_bot[0], Math.max(vBas_bot[1],vHaut_bot[1]), yBase, 'A '+fmt(A));
+    // longueur vraie bord bas (développé)
+    const Ld=Math.sqrt(A*A+drop*drop);
+    const midB=[(vBas_bot[0]+vHaut_bot[0])/2,(vBas_bot[1]+vHaut_bot[1])/2];
+    dimText(gf,midB[0],midB[1]+ (leftIsBas?-14:-14),'dév '+fmt(Ld));
+    // angle pente au coin haut (P2)
+    const cP2=T(P2[0],P2[1]);
+    const toP1=T(P1[0],P1[1]); const angEdge=Math.atan2(toP1[1]-cP2[1],toP1[0]-cP2[0]);
+    const angHor=Math.atan2(0, (toP1[0]-cP2[0]) );
+    angleMark(gf,cP2[0],cP2[1], Math.min(angEdge,angHor), Math.max(angEdge,angHor),24, penteTxt(pr));
+
+    // ---- plis (angles de pliage rouge) ----
+    if(pr.p>0){ // platine côté = 90°
+      const L=Math.sqrt(A*A+drop*drop)||1, nx=drop/L, ny=-A/L;
+      const m=T(A*0.22+nx*pr.p*0.5, drop*0.22+ny*pr.p*0.5);
+      const dir=leftIsBas?-1:1;
+      pliCallout(gf, m[0],m[1], vBas_bot[0]+dir*30, vBas_bot[1]+16, 'pl '+fmt(pr.p),'90°',dir);
+    }
+    let topY=T(A/2,hBas+plis)[1]-4;
+    if(pr.pli1>0){const m=T(A*0.60,hBas+pr.pli1/2);pliCallout(gf,m[0],m[1],T(A*0.64,hBas+plis)[0],topY,'p1 '+fmt(pr.pli1),'90°',1);topY-=26;}
+    if(pr.pli2>0){const m=T(A*0.40,hBas+pr.pli1+pr.pli2/2);pliCallout(gf,m[0],m[1],T(A*0.36,hBas+plis)[0],topY,'p2 '+fmt(pr.pli2),'90°',-1);}
+  }
+
+  rect('haut',COL.haut,pr.B,d.hHaut);
+  rect('bas',COL.bas,pr.B,d.hBas);
+  trap('gauche',COL.gauche,false);
+  trap('droite',COL.droite,true);
+}
+
+/* ============================================================
+   VUE 3D
+   ============================================================ */
+const cv3=$('cv3d'), g3=cv3.getContext('2d');
+function project(p,cx,cy,S){
+  const {az,el}=cam;
+  const x=p[0],y=p[1],z=p[2];
+  const x1= x*Math.cos(az)-y*Math.sin(az);
+  const y1= x*Math.sin(az)+y*Math.cos(az);
+  const y2= y1*Math.cos(el)-z*Math.sin(el);
+  const z2= y1*Math.sin(el)+z*Math.cos(el);
+  return {sx:cx+x1*S, sy:cy-z2*S, depth:y2};
+}
+function faceCenter(f){let x=0,y=0,z=0;f.pts.forEach(p=>{x+=p[0];y+=p[1];z+=p[2];});const n=f.pts.length;return [x/n,y/n,z/n];}
+
+function build3D(pr,d){
+  const A=pr.A,B=pr.B, zbH=d.zbHaut, zbB=d.zbBas, zT=d.zTop, p=pr.p;
+  const ta=Math.tan(pr.alpha);
+  const faces=[];
+  // roof plane (contexte)
+  const rx=B/2+A*0.5, ry=A/2+A*0.35;
+  faces.push({pts:[[-rx,-ry,-ry*ta],[rx,-ry,-ry*ta],[rx,ry,ry*ta],[-rx,ry,ry*ta]],fill:'rgba(120,140,165,.07)',stroke:'rgba(120,140,165,.25)',lw:1});
+  // murs
+  faces.push({name:'haut',pts:[[-B/2,A/2,zbH],[B/2,A/2,zbH],[B/2,A/2,zT],[-B/2,A/2,zT]],fill:tint(COL.haut,.5),stroke:COL.haut,lw:2});
+  faces.push({name:'bas', pts:[[-B/2,-A/2,zbB],[B/2,-A/2,zbB],[B/2,-A/2,zT],[-B/2,-A/2,zT]],fill:tint(COL.bas,.5),stroke:COL.bas,lw:2});
+  faces.push({name:'gauche',pts:[[-B/2,-A/2,zbB],[-B/2,A/2,zbH],[-B/2,A/2,zT],[-B/2,-A/2,zT]],fill:tint(COL.gauche,.5),stroke:COL.gauche,lw:2});
+  faces.push({name:'droite',pts:[[B/2,-A/2,zbB],[B/2,A/2,zbH],[B/2,A/2,zT],[B/2,-A/2,zT]],fill:tint(COL.droite,.5),stroke:COL.droite,lw:2});
+  // platines (sur le plan de toit)
+  if(p>0){
+    const up=[0,Math.cos(pr.alpha),Math.sin(pr.alpha)];   // vers l'amont
+    const dn=[0,-Math.cos(pr.alpha),-Math.sin(pr.alpha)]; // vers l'aval
+    const add=(a,v,k)=>[a[0]+v[0]*k,a[1]+v[1]*k,a[2]+v[2]*k];
+    // haut : e1=[-B/2,A/2,zbH] e2=[B/2,A/2,zbH]
+    let e1=[-B/2,A/2,zbH],e2=[B/2,A/2,zbH];
+    faces.push({pts:[e1,e2,add(e2,up,p),add(e1,up,p)],fill:tint(COL.haut,.32),stroke:COL.haut,lw:1.2});
+    e1=[-B/2,-A/2,zbB];e2=[B/2,-A/2,zbB];
+    faces.push({pts:[e1,e2,add(e2,dn,p),add(e1,dn,p)],fill:tint(COL.bas,.32),stroke:COL.bas,lw:1.2});
+    // gauche/droite : le long -x/+x (plan toit indép. de x)
+    e1=[-B/2,-A/2,zbB];e2=[-B/2,A/2,zbH];
+    faces.push({pts:[e1,e2,[e2[0]-p,e2[1],e2[2]],[e1[0]-p,e1[1],e1[2]]],fill:tint(COL.gauche,.32),stroke:COL.gauche,lw:1.2});
+    e1=[B/2,-A/2,zbB];e2=[B/2,A/2,zbH];
+    faces.push({pts:[e1,e2,[e2[0]+p,e2[1],e2[2]],[e1[0]+p,e1[1],e1[2]]],fill:tint(COL.droite,.32),stroke:COL.droite,lw:1.2});
+  }
+  // plis du haut (rabat vers l'intérieur au niveau zT)
+  const t1=pr.pli1,t2=pr.pli2;
+  function topFold(edgeA,edgeB,inDir){ // inDir vecteur unitaire xy vers l'intérieur
+    if(t1<=0)return;
+    const iA=[edgeA[0]+inDir[0]*t1,edgeA[1]+inDir[1]*t1,zT], iB=[edgeB[0]+inDir[0]*t1,edgeB[1]+inDir[1]*t1,zT];
+    faces.push({pts:[edgeA,edgeB,iB,iA],fill:'rgba(230,235,242,.20)',stroke:'#9fb0c4',lw:1});
+    if(t2>0){ // 2e pli : descend de t2
+      faces.push({pts:[iA,iB,[iB[0],iB[1],zT-t2],[iA[0],iA[1],zT-t2]],fill:'rgba(230,235,242,.14)',stroke:'#9fb0c4',lw:1});
+    }
+  }
+  topFold([-B/2,A/2,zT],[B/2,A/2,zT],[0,-1]);   // haut -> intérieur -y
+  topFold([-B/2,-A/2,zT],[B/2,-A/2,zT],[0,1]);  // bas  -> +y
+  topFold([-B/2,-A/2,zT],[-B/2,A/2,zT],[1,0]);  // gauche -> +x
+  topFold([B/2,-A/2,zT],[B/2,A/2,zT],[-1,0]);   // droite -> -x
+  return faces;
+}
+
+function draw3D(){
+  const pr=P(), d=derive(pr);
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const cssW=cv3.clientWidth, cssH=560;
+  cv3.width=cssW*dpr;cv3.height=cssH*dpr;cv3.style.height=cssH+'px';
+  g3.setTransform(dpr,0,0,dpr,0,0);
+  g3.clearRect(0,0,cssW,cssH);
+  const cx=cssW/2, cy=cssH/2+ d.zTop*0.15;
+  const span=Math.max(pr.A,pr.B,d.zTop)*1.9;
+  const S=Math.min(cssW,cssH)/span * cam.scale;
+
+  const faces=build3D(pr,d);
+  // tri profondeur (loin -> près)
+  const drawn=faces.map(f=>{const pts=f.pts.map(p=>project(p,cx,cy,S));const c=faceCenter(f);const dc=project(c,cx,cy,S).depth;return {f,pts,depth:dc};});
+  drawn.sort((a,b)=>b.depth-a.depth);
+  drawn.forEach(o=>{
+    g3.beginPath();g3.moveTo(o.pts[0].sx,o.pts[0].sy);for(let i=1;i<o.pts.length;i++)g3.lineTo(o.pts[i].sx,o.pts[i].sy);g3.closePath();
+    g3.fillStyle=o.f.fill;g3.fill();g3.strokeStyle=o.f.stroke;g3.lineWidth=o.f.lw;g3.stroke();
+  });
+
+  // ---- cotes 3D ----
+  const B=pr.B,A=pr.A;
+  const pj=p=>project(p,cx,cy,S);
+  function d3(pa,pb,off,t,col){
+    const a=pj(pa),b=pj(pb);
+    // décalage perpendiculaire écran
+    let dx=b.sx-a.sx,dy=b.sy-a.sy,l=Math.hypot(dx,dy)||1;let nx=-dy/l,ny=dx/l;
+    const a2={x:a.sx+nx*off,y:a.sy+ny*off}, b2={x:b.sx+nx*off,y:b.sy+ny*off};
+    g3.strokeStyle=col||'#8fa0b5';g3.fillStyle=col||'#8fa0b5';g3.lineWidth=1;
+    g3.beginPath();g3.moveTo(a.sx,a.sy);g3.lineTo(a2.x,a2.y);g3.moveTo(b.sx,b.sy);g3.lineTo(b2.x,b2.y);
+    g3.moveTo(a2.x,a2.y);g3.lineTo(b2.x,b2.y);g3.stroke();
+    dimText(g3,(a2.x+b2.x)/2,(a2.y+b2.y)/2,t);
+  }
+  // B (bord haut, face haut)
+  d3([-B/2,A/2,d.zTop],[B/2,A/2,d.zTop],-22,'B '+fmt(B),COL.haut);
+  // A (bord haut, face gauche)
+  d3([-B/2,-A/2,d.zTop],[-B/2,A/2,d.zTop],-22,'A '+fmt(A),COL.gauche);
+  // H (arête verticale haut-gauche)
+  d3([-B/2,A/2,d.zbHaut],[-B/2,A/2,d.zTop],-18,'H '+fmt(d.hHaut),'#c9d3df');
+  // hBas (arête verticale bas-gauche)
+  d3([-B/2,-A/2,d.zbBas],[-B/2,-A/2,d.zTop],-18,'hB '+fmt(d.hBas),'#c9d3df');
+  // platine (aval, face bas)
+  if(pr.p>0){const dn=[0,-Math.cos(pr.alpha),-Math.sin(pr.alpha)];
+    d3([0,-A/2,d.zbBas],[0,-A/2+dn[1]*pr.p,d.zbBas+dn[2]*pr.p],16,'pl '+fmt(pr.p),COL.bas);}
+  // pente (arête bas gauche = ligne de toit) + label
+  {const a=pj([-B/2,-A/2,d.zbBas]),b=pj([-B/2,A/2,d.zbHaut]);
+   g3.strokeStyle=COL.gauche;g3.setLineDash([5,4]);g3.lineWidth=1.4;
+   g3.beginPath();g3.moveTo(a.sx,a.sy);g3.lineTo(b.sx,b.sy);g3.stroke();g3.setLineDash([]);
+   dimText(g3,(a.sx+b.sx)/2+30,(a.sy+b.sy)/2,'pente '+penteTxt(pr));}
+  // repère orientation
+  g3.fillStyle='#6c7a8c';g3.font='11px Segoe UI';g3.textAlign='left';
+  const oa=pj([0,d.zTop*0+A/2+A*0.42,d.zTop*0+ (A/2+A*0.42)*Math.tan(pr.alpha)]);
+  g3.fillText('↑ haut de toit',12,cssH-14);
+}
+
+/* ---------- info + refresh ---------- */
+function refresh(){
+  const pr=P(), d=derive(pr);
+  $('penteEq').textContent = penteTxt(pr);
+  $('infoLine').innerHTML =
+    `Dénivelé sur A : <b>${fmt(d.drop)} mm</b> &nbsp;·&nbsp; mur haut <b>${fmt(d.hHaut)}</b> / mur bas <b>${fmt(d.hBas)}</b> mm `+
+    `&nbsp;·&nbsp; bord bas développé G/D <b>${fmt(Math.sqrt(pr.A*pr.A+d.drop*d.drop))} mm</b>`;
+  if(tab==='flat') drawFlat(); else draw3D();
+}
+
+/* ---------- events ---------- */
+[A_,B_,H_,PENTE,PLAT,PLI1,PLI2].forEach(el=>el.addEventListener('input',refresh));
+$('carre').addEventListener('change',e=>{B_.disabled=e.target.checked;refresh();});
+$('uDeg').onclick=()=>{penteUnit='deg';$('uDeg').classList.add('on');$('uPct').classList.remove('on');refresh();};
+$('uPct').onclick=()=>{penteUnit='pct';$('uPct').classList.add('on');$('uDeg').classList.remove('on');refresh();};
+$('p1').onclick=()=>{pliMode=1;$('p1').classList.add('on');$('p2').classList.remove('on');$('rowPli2').style.display='none';refresh();};
+$('p2').onclick=()=>{pliMode=2;$('p2').classList.add('on');$('p1').classList.remove('on');$('rowPli2').style.display='flex';refresh();};
+$('rowPli2').style.display='none';
+
+$('tabFlat').onclick=()=>{tab='flat';$('tabFlat').classList.add('on');$('tab3d').classList.remove('on');$('viewFlat').classList.add('on');$('view3d').classList.remove('on');refresh();};
+$('tab3d').onclick=()=>{tab='3d';$('tab3d').classList.add('on');$('tabFlat').classList.remove('on');$('view3d').classList.add('on');$('viewFlat').classList.remove('on');refresh();};
+
+// presets 3D
+const PRE={iso:[-0.62,0.38],dessus:[0,1.45],haut:[0,0.10],bas:[Math.PI,0.10],cote:[Math.PI/2,0.18]};
+document.querySelectorAll('.toolbar button[data-p]').forEach(b=>b.onclick=()=>{const q=PRE[b.dataset.p];cam.az=q[0];cam.el=q[1];draw3D();});
+$('reset3d').onclick=()=>{cam={az:-0.62,el:0.38,scale:1};draw3D();};
+
+// orbit + zoom
+let drag=null;
+cv3.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};cv3.setPointerCapture(e.pointerId);});
+cv3.addEventListener('pointermove',e=>{if(!drag)return;cam.az+=(e.clientX-drag.x)*0.01;cam.el+=(e.clientY-drag.y)*0.01;cam.el=Math.max(-0.2,Math.min(1.55,cam.el));drag={x:e.clientX,y:e.clientY};draw3D();});
+cv3.addEventListener('pointerup',()=>drag=null);
+cv3.addEventListener('wheel',e=>{e.preventDefault();cam.scale*=e.deltaY<0?1.1:0.9;cam.scale=Math.max(0.3,Math.min(4,cam.scale));draw3D();},{passive:false});
+
+window.addEventListener('resize',refresh);
+refresh();
+</script>
+</body>
+</html>
