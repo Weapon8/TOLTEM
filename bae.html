@@ -297,6 +297,9 @@ function makeModel(){
       const seg=(x1,y1,x2,y2,c)=>segs.push({ax:x1,ay:y1,az:0,bx:x2,by:y2,bz:0,c});
       const note=(x,y,t,c)=>notes.push({x,y,z:0,t,c});
       const poly=(p,c)=>{for(let i=0;i<p.length-1;i++) seg(p[i][0],p[i][1],p[i+1][0],p[i+1][1],c);};
+      const noteC=(x,y,t,c)=>notes.push({x,y,z:0,t,c,a:'c'});
+      const dimH=(x1,x2,y,t,c='Cote')=>{const e=7;seg(x1,y-e,x1,y+e,c);seg(x2,y-e,x2,y+e,c);seg(x1,y,x2,y,c);noteC((x1+x2)/2,y,t,c);};
+      const dimV=(y1,y2,x,t,c='Cote')=>{const e=7;seg(x-e,y1,x+e,y1,c);seg(x-e,y2,x+e,y2,c);seg(x,y1,x,y2,c);notes.push({x,y:(y1+y2)/2,z:0,t,c,a:'r'});};
       if(!this.Back3){
         const xA=L,xB=L+P,xC=2*L+P,xD=2*L+2*P,xE=xD+REC;
         const pts=[[0,0],[xE,0],[xE,H],[xD,H],[xD,top-D],[xD-D,top]];
@@ -311,6 +314,16 @@ function makeModel(){
         note((xB+xC)*0.5,H*0.28,'FACADE','Cote');
         note((xC+xD)*0.5,H*0.45,'COTE','Cote');
         note(xA*0.5,top+8,`desanglage ${r0(D)} a 45°`,'Corps');
+        // cotes des façades
+        const yd=-34,yt=-64;
+        dimH(0,xA,yd,`${r0(L)}`);
+        dimH(xA,xB,yd,`${r0(P)}`);
+        dimH(xB,xC,yd,`${r0(L)}`);
+        dimH(xC,xD,yd,`${r0(P)}`);
+        dimH(xD,xE,yd,`${r0(REC)}`,'Rec');
+        dimH(0,xE,yt,`flan ${r0(xE)}`);
+        dimV(0,H,-32,`${r0(H)}`);
+        if(R>0) dimV(H,top,-32,`${r0(R)}`,'Raid');
         this._flatTP(seg,note,xB);this._flatArr(seg,note,0);
         cursorX=xE+gap;
       } else {
@@ -325,6 +338,16 @@ function makeModel(){
         note((xr1+xc1)*0.5,H*0.45,'COTE','Cote');
         note((xc1+xf2)*0.5,H*0.28,'FACADE','Cote');
         note((xf2+xc2)*0.5,H*0.45,'COTE','Cote');
+        // cotes des façades
+        const yd=-34,yt=-64;
+        dimH(0,xr1,yd,`${r0(REC)}`,'Rec');
+        dimH(xr1,xc1,yd,`${r0(P)}`);
+        dimH(xc1,xf2,yd,`${r0(L)}`);
+        dimH(xf2,xc2,yd,`${r0(P)}`);
+        dimH(xc2,xe,yd,`${r0(REC)}`,'Rec');
+        dimH(0,xe,yt,`flan ${r0(xe)}`);
+        dimV(0,H,-32,`${r0(H)}`);
+        if(R>0) dimV(H,top,-32,`${r0(R)}`,'Raid');
         this._flatTP(seg,note,xc1);
         cursorX=xe+gap;
         this._dosseretFlat(seg,note,cursorX);
@@ -466,8 +489,11 @@ function draw(){
   for(const n of notes){
     const p=SP(tr({x:n.x,y:n.y,z:n.z}));
     ctx.fillStyle=COL[n.c]||COL.Cote;
-    ctx.fillText(n.t,p.x+5,p.y-2);
+    if(n.a==='c'){ctx.textAlign='center';ctx.fillText(n.t,p.x,p.y-2);}
+    else if(n.a==='r'){ctx.textAlign='right';ctx.fillText(n.t,p.x-6,p.y+4);}
+    else{ctx.textAlign='left';ctx.fillText(n.t,p.x+5,p.y-2);}
   }
+  ctx.textAlign='left';
 }
 
 // ---------- INTERACTION ----------
