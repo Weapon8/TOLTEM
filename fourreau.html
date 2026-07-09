@@ -62,7 +62,7 @@
 <header>
   <div class="logo"></div>
   <h1>FOURREAU <span>1.5</span></h1>
-  <div class="sub">carré / rectangle · développé 4 éléments · pli platine · vue 3D</div>
+  <div class="sub">carré / rectangle · développé 4 éléments · platine + plis haut vers l'extérieur · vue 3D</div>
 </header>
 
 <div class="wrap">
@@ -133,7 +133,7 @@
       <span><i style="background:var(--bas)"></i>Bas de toit</span>
       <span><i style="background:var(--gauche)"></i>Gauche</span>
       <span><i style="background:var(--droite)"></i>Droite</span>
-      <span style="color:#ff5a4d"><b style="color:#ff5a4d">∡</b>&nbsp;angle de pliage (retour à plat)</span>
+      <span style="color:#ff5a4d"><b style="color:#ff5a4d">∡</b>&nbsp;angle de pliage — <b style="color:#ff5a4d">ext</b> = rabat vers l'extérieur</span>
     </div>
     <div class="info" id="infoLine"></div>
   </main>
@@ -308,12 +308,12 @@ function drawFlat(){
     dimH(gf, plBot[0], T(width,-pr.p)[0], plBot[1], plBot[1]+34, 'B '+fmt(width)); // largeur
     dimV(gf, tl[1], bl[1], bl[0], bl[0]-30, 'H '+fmt(height));                     // hauteur mur
     // platine (droite bas) + angle de pliage rouge
-    if(pr.p>0) pliCote(gf, T(width,0)[1], T(width,-pr.p)[1], br[0], br[0]+24, 'pl '+fmt(pr.p), fmt(platAng)+'°', 1);
+    if(pr.p>0) pliCote(gf, T(width,0)[1], T(width,-pr.p)[1], br[0], br[0]+24, 'pl '+fmt(pr.p), fmt(platAng)+'° ext', 1);
     // plis haut : callouts déportés au-dessus à droite (angle 90°)
     const xR=T(width,height+plis)[0];
     let yb=height, lab=T(width,height+plis)[1]-4;
-    if(pr.pli1>0){const m=T(width,yb+pr.pli1/2);pliCallout(gf,m[0],m[1],xR+8,lab,'p1 '+fmt(pr.pli1),'90°',1);yb+=pr.pli1;lab-=26;}
-    if(pr.pli2>0){const m=T(width,yb+pr.pli2/2);pliCallout(gf,m[0],m[1],xR+8,lab,'p2 '+fmt(pr.pli2),'90°',1);}
+    if(pr.pli1>0){const m=T(width,yb+pr.pli1/2);pliCallout(gf,m[0],m[1],xR+8,lab,'p1 '+fmt(pr.pli1),'90° ext',1);yb+=pr.pli1;lab-=26;}
+    if(pr.pli2>0){const m=T(width,yb+pr.pli2/2);pliCallout(gf,m[0],m[1],xR+8,lab,'p2 '+fmt(pr.pli2),'90° ext',1);}
     rightAngle(gf,bl[0],bl[1],1,1);
   }
 
@@ -382,11 +382,11 @@ function drawFlat(){
       const L=Math.sqrt(A*A+drop*drop)||1, nx=drop/L, ny=-A/L;
       const m=T(A*0.22+nx*pr.p*0.5, drop*0.22+ny*pr.p*0.5);
       const dir=leftIsBas?-1:1;
-      pliCallout(gf, m[0],m[1], vBas_bot[0]+dir*30, vBas_bot[1]+16, 'pl '+fmt(pr.p),'90°',dir);
+      pliCallout(gf, m[0],m[1], vBas_bot[0]+dir*30, vBas_bot[1]+16, 'pl '+fmt(pr.p),'90° ext',dir);
     }
     let topY=T(A/2,hBas+plis)[1]-4;
-    if(pr.pli1>0){const m=T(A*0.60,hBas+pr.pli1/2);pliCallout(gf,m[0],m[1],T(A*0.64,hBas+plis)[0],topY,'p1 '+fmt(pr.pli1),'90°',1);topY-=26;}
-    if(pr.pli2>0){const m=T(A*0.40,hBas+pr.pli1+pr.pli2/2);pliCallout(gf,m[0],m[1],T(A*0.36,hBas+plis)[0],topY,'p2 '+fmt(pr.pli2),'90°',-1);}
+    if(pr.pli1>0){const m=T(A*0.60,hBas+pr.pli1/2);pliCallout(gf,m[0],m[1],T(A*0.64,hBas+plis)[0],topY,'p1 '+fmt(pr.pli1),'90° ext',1);topY-=26;}
+    if(pr.pli2>0){const m=T(A*0.40,hBas+pr.pli1+pr.pli2/2);pliCallout(gf,m[0],m[1],T(A*0.36,hBas+plis)[0],topY,'p2 '+fmt(pr.pli2),'90° ext',-1);}
   }
 
   rect('haut',COL.haut,pr.B,d.hHaut);
@@ -438,20 +438,20 @@ function build3D(pr,d){
     e1=[B/2,-A/2,zbB];e2=[B/2,A/2,zbH];
     faces.push({pts:[e1,e2,[e2[0]+p,e2[1],e2[2]],[e1[0]+p,e1[1],e1[2]]],fill:tint(COL.droite,.32),stroke:COL.droite,lw:1.2});
   }
-  // plis du haut (rabat vers l'intérieur au niveau zT)
+  // plis du haut (rabat vers l'EXTERIEUR au niveau zT, comme la platine)
   const t1=pr.pli1,t2=pr.pli2;
-  function topFold(edgeA,edgeB,inDir){ // inDir vecteur unitaire xy vers l'intérieur
+  function topFold(edgeA,edgeB,outDir){ // outDir vecteur unitaire xy vers l'extérieur
     if(t1<=0)return;
-    const iA=[edgeA[0]+inDir[0]*t1,edgeA[1]+inDir[1]*t1,zT], iB=[edgeB[0]+inDir[0]*t1,edgeB[1]+inDir[1]*t1,zT];
-    faces.push({pts:[edgeA,edgeB,iB,iA],fill:'rgba(230,235,242,.20)',stroke:'#9fb0c4',lw:1});
-    if(t2>0){ // 2e pli : descend de t2
-      faces.push({pts:[iA,iB,[iB[0],iB[1],zT-t2],[iA[0],iA[1],zT-t2]],fill:'rgba(230,235,242,.14)',stroke:'#9fb0c4',lw:1});
+    const oA=[edgeA[0]+outDir[0]*t1,edgeA[1]+outDir[1]*t1,zT], oB=[edgeB[0]+outDir[0]*t1,edgeB[1]+outDir[1]*t1,zT];
+    faces.push({pts:[edgeA,edgeB,oB,oA],fill:'rgba(230,235,242,.20)',stroke:'#9fb0c4',lw:1});
+    if(t2>0){ // 2e pli : retombe de t2 (larmier, à l'extérieur)
+      faces.push({pts:[oA,oB,[oB[0],oB[1],zT-t2],[oA[0],oA[1],zT-t2]],fill:'rgba(230,235,242,.14)',stroke:'#9fb0c4',lw:1});
     }
   }
-  topFold([-B/2,A/2,zT],[B/2,A/2,zT],[0,-1]);   // haut -> intérieur -y
-  topFold([-B/2,-A/2,zT],[B/2,-A/2,zT],[0,1]);  // bas  -> +y
-  topFold([-B/2,-A/2,zT],[-B/2,A/2,zT],[1,0]);  // gauche -> +x
-  topFold([B/2,-A/2,zT],[B/2,A/2,zT],[-1,0]);   // droite -> -x
+  topFold([-B/2,A/2,zT],[B/2,A/2,zT],[0,1]);    // haut -> extérieur +y
+  topFold([-B/2,-A/2,zT],[B/2,-A/2,zT],[0,-1]); // bas  -> extérieur -y
+  topFold([-B/2,-A/2,zT],[-B/2,A/2,zT],[-1,0]); // gauche -> extérieur -x
+  topFold([B/2,-A/2,zT],[B/2,A/2,zT],[1,0]);    // droite -> extérieur +x
   return faces;
 }
 
