@@ -121,12 +121,14 @@
       </div>
       <label>Horizontal</label>
       <div class="toggle" data-g="TPcol">
-        <button data-v="gauche">Gauche</button><button data-v="centre" class="on">Centre</button><button data-v="droite">Droite</button>
+        <button data-v="gauche">Gauche</button><button data-v="centre" class="on">Centre</button><button data-v="droite">Droite</button><button data-v="perso">Perso</button>
       </div>
+      <div id="wrapTPx" class="hidden"><label>X depuis gauche (mm)</label><input type="number" id="TPxCustom" value="100" step="1"></div>
       <label>Vertical</label>
       <div class="toggle" data-g="TProw">
-        <button data-v="haut">Haut</button><button data-v="milieu" class="on">Milieu</button><button data-v="bas">Bas</button>
+        <button data-v="haut">Haut</button><button data-v="milieu" class="on">Milieu</button><button data-v="bas">Bas</button><button data-v="perso">Perso</button>
       </div>
+      <div id="wrapTPy" class="hidden"><label>Y depuis bas (mm)</label><input type="number" id="TPyCustom" value="125" step="1"></div>
 
       <h2>EP / naissance (fond)</h2>
       <label>Forme</label>
@@ -216,7 +218,7 @@ const r0 = x => Math.round(x);
 function makeModel(){
   return {
     L:200,P:200,H:250,Raid:10,
-    TPw:150,TPh:50,TPcol:'centre',TProw:'milieu',
+    TPw:150,TPh:50,TPcol:'centre',TProw:'milieu',TPxCustom:100,TPyCustom:125,
     EPforme:'rond',EPw:80,EPh:80,EPcol:'centre',EProw:'centre',EPxCustom:100,EPzCustom:100,
     ARforme:'aucune',ARw:100,ARh:100,ARcol:'centre',ARrow:'milieu',
     Back3:false,
@@ -248,8 +250,8 @@ function makeModel(){
       note(hx,H/2,hz,`H ${r0(H)}`,'Cote');
       note(hx,-14,0,`larg ${r0(P)}`,'Cote');
       {const w=this.TPw,h=this.TPh;
-        const cx=this.TPcol==='gauche'?-hx+M+w/2:this.TPcol==='droite'?hx-M-w/2:0;
-        const cy=this.TProw==='haut'?H-M-h/2:this.TProw==='bas'?M+h/2:H/2;
+        const cx=this.TPcol==='perso'?-hx+this.TPxCustom:this.TPcol==='gauche'?-hx+M+w/2:this.TPcol==='droite'?hx-M-w/2:0;
+        const cy=this.TProw==='perso'?this.TPyCustom:this.TProw==='haut'?H-M-h/2:this.TProw==='bas'?M+h/2:H/2;
         const z=hz;
         const o=[[cx-w/2,cy-h/2,z],[cx+w/2,cy-h/2,z],[cx+w/2,cy+h/2,z],[cx-w/2,cy+h/2,z]];
         loop(o,'TP');
@@ -377,8 +379,8 @@ function makeModel(){
     },
     _flatTP(seg,note,panelX){
       const w=this.TPw,h=this.TPh,L=this.L,H=this.H,M=this.Margin;
-      const cx=this.TPcol==='gauche'?M+w/2:this.TPcol==='droite'?L-M-w/2:L/2;
-      const cy=this.TProw==='haut'?H-M-h/2:this.TProw==='bas'?M+h/2:H/2;
+      const cx=this.TPcol==='perso'?this.TPxCustom:this.TPcol==='gauche'?M+w/2:this.TPcol==='droite'?L-M-w/2:L/2;
+      const cy=this.TProw==='perso'?this.TPyCustom:this.TProw==='haut'?H-M-h/2:this.TProw==='bas'?M+h/2:H/2;
       this._rect(seg,panelX+cx-w/2,cy-h/2,w,h,'TP');
       note(panelX+cx,cy,`TP ${r0(w)}×${r0(h)}`,'TP');
     },
@@ -422,12 +424,14 @@ function makeModel(){
       const ar=this.ARforme==='aucune'?'lisse':this.ARforme==='rond'?`ronde Ø${r0(this.ARw)}`:this.ARforme==='carre'?`carree ${r0(this.ARw)}`:`rect ${r0(this.ARw)}×${r0(this.ARh)}`;
       const epCol=this.EPcol==='perso'?`X${r0(this.EPxCustom)} depuis gauche`:this.EPcol;
       const epRow=this.EProw==='perso'?`Z${r0(this.EPzCustom)} depuis arriere`:this.EProw;
+      const tpCol=this.TPcol==='perso'?`X${r0(this.TPxCustom)} depuis gauche`:this.TPcol;
+      const tpRow=this.TProw==='perso'?`Y${r0(this.TPyCustom)} depuis bas`:this.TProw;
       return [
         `Longueur (L)        : ${r0(this.L)} mm`,
         `Largeur             : ${r0(this.P)} mm`,
         `Hauteur finie       : ${r0(this.H)} mm`,
         `Raidisseur interne  : ${r0(this.Raid)} mm  (flan ${r0(this.H+this.Raid)})`,
-        `Trop-plein          : ${r0(this.TPw)}x${r0(this.TPh)} mm  (${this.TProw}/${this.TPcol})`,
+        `Trop-plein          : ${r0(this.TPw)}x${r0(this.TPh)} mm  (${tpRow}/${tpCol})`,
         `EP / naissance      : ${ep}  (${epRow}/${epCol})`,
         `Sortie toiture arr. : ${ar}`,
         `Fond                : ${r0(this.FondL)}x${r0(this.FondP)} mm`,
@@ -536,7 +540,7 @@ document.querySelectorAll('.toggle[data-g], .vtabs[data-g]').forEach(grp=>{
   });
 });
 
-['L','P','H','Raid','TPw','TPh','EPw','EPh','EPxCustom','EPzCustom','ARw','ARh'].forEach(id=>{
+['L','P','H','Raid','TPw','TPh','TPxCustom','TPyCustom','EPw','EPh','EPxCustom','EPzCustom','ARw','ARh'].forEach(id=>{
   document.getElementById(id).addEventListener('input',e=>{
     const v=parseFloat(e.target.value); if(isFinite(v)) setModel(id,v);
   });
@@ -546,6 +550,8 @@ function syncEnable(){
   document.getElementById('EPh').disabled = m.EPforme!=='rect';
   document.getElementById('ARw').disabled = m.ARforme==='aucune';
   document.getElementById('ARh').disabled = m.ARforme!=='rect';
+  document.getElementById('wrapTPx').classList.toggle('hidden', m.TPcol!=='perso');
+  document.getElementById('wrapTPy').classList.toggle('hidden', m.TProw!=='perso');
   document.getElementById('wrapEPx').classList.toggle('hidden', m.EPcol!=='perso');
   document.getElementById('wrapEPz').classList.toggle('hidden', m.EProw!=='perso');
 }
