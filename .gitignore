@@ -1,0 +1,39 @@
+# ===== TolTem - depot GitHub Pages (HTML) =====
+
+# --- Scripts de deploiement locaux (on garde ca pour soi) ---
+*.bat
+
+# --- Executables / binaires (ne JAMAIS committer dans un repo Pages) ---
+*.exe
+*.dll
+*.msi
+*.zip
+*.7z
+*.rar
+
+# --- Windows (cruft de l'explorateur) ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# --- macOS (au cas ou) ---
+.DS_Store
+
+# --- Editeurs / IDE ---
+.vs/
+.vscode/
+*.user
+*.suo
+
+# --- Node (si tu testes du JS dans le dossier avant de porter) ---
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# --- Fichiers temporaires / sauvegardes ---
+*.tmp
+*.bak
+*.old
+*~
+*.log
