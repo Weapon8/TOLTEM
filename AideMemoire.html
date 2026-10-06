@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aide-mémoire atelier | TolTem</title>
+<meta name="description" content="Les feuilles volantes de l'atelier au propre : développés, solin, rive alu, colliers chapeaux, pentes.">
+<meta name="theme-color" content="#14181F">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aide-mémoire">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2314181F'/%3E%3Cpath d='M12 48H52V20Z' fill='%23FF7A1A'/%3E%3C/svg%3E">
+<style>
+:root{
+  --fond:#14181F;
+  --panneau:#1B212B;
+  --creux:#10141A;
+  --trait:#2B3442;
+  --texte:#E9EDF2;
+  --doux:#94A1B2;
+  --accent:#FF7A1A;
+  --doute:#FFC94A;
+  --cond:"Roboto Condensed","sans-serif-condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --corps:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:64px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{
+  margin:0;background:var(--fond);color:var(--texte);
+  font:16px/1.45 var(--corps);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- En-tête ---------- */
+.tete{max-width:1100px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top,0px)) 16px 10px}
+.hub{display:inline-block;color:var(--doux);font-size:.9rem;text-decoration:none;padding:6px 0}
+.hub:hover{color:var(--texte)}
+h1{
+  margin:4px 0 6px;font-family:var(--cond);font-weight:700;
+  font-size:clamp(2rem,7vw,2.9rem);line-height:1.05;letter-spacing:-.01em;
+}
+.intro{margin:0;color:var(--doux);max-width:60ch}
+.legende{margin:10px 0 0;font-size:.9rem;color:var(--doux)}
+
+/* ---------- Navigation ---------- */
+.nav{
+  position:sticky;top:0;z-index:5;background:var(--fond);
+  border-bottom:1px solid var(--trait);
+}
+.nav ul{
+  max-width:1100px;margin:0 auto;padding:8px 16px;list-style:none;
+  display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+}
+.nav ul::-webkit-scrollbar{display:none}
+.nav a{
+  display:block;white-space:nowrap;text-decoration:none;
+  padding:9px 14px;border:1px solid var(--trait);border-radius:999px;
+  font-size:.95rem;color:var(--doux);
+}
+.nav a:hover{color:var(--texte)}
+.nav a.ici{background:var(--accent);border-color:var(--accent);color:#14181F;font-weight:600}
+
+/* ---------- Grille et panneaux ---------- */
+main{
+  max-width:1100px;margin:0 auto;padding:16px;
+  display:grid;gap:14px;align-items:start;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));
+}
+.fiche{
+  background:var(--panneau);border:1px solid var(--trait);border-radius:8px;
+  padding:16px 16px 12px;min-width:0;
+}
+.fiche.large{grid-column:1/-1}
+h2{
+  margin:0 0 8px;padding-left:10px;border-left:4px solid var(--accent);
+  font-family:var(--cond);font-weight:700;font-size:1.4rem;line-height:1.15;
+}
+h3{margin:18px 0 2px;font-family:var(--cond);font-weight:700;font-size:1.1rem}
+.note{margin:10px 0 0;font-size:.9rem;color:var(--doux)}
+.fait{margin:6px 0 0;font-size:1.05rem}
+.fait b{font-family:var(--cond);font-size:1.3rem;font-variant-numeric:tabular-nums}
+
+/* ---------- Tableaux ---------- */
+table{width:100%;border-collapse:collapse}
+thead th{
+  text-align:left;font-weight:500;font-size:.82rem;color:var(--doux);
+  padding:4px 0 6px;border-bottom:1px solid var(--trait);
+}
+tbody th{text-align:left;font-weight:500;font-size:1.05rem;padding:10px 8px 10px 0}
+tbody td{padding:10px 0 10px 8px}
+tbody tr+tr th,tbody tr+tr td{border-top:1px solid var(--trait)}
+.num{text-align:right;white-space:nowrap}
+td.num{font-family:var(--cond);font-weight:700;font-size:1.3rem;font-variant-numeric:tabular-nums}
+td.num.leger{font-weight:500;color:var(--doux)}
+
+.doute{color:var(--doute)}
+.doute::after{content:" ?";font-weight:500}
+.vide{font-family:var(--corps);font-weight:400;font-size:.9rem;color:var(--doux);font-style:italic}
+
+/* ---------- Colliers ---------- */
+.collier{padding:12px 0 4px}
+.collier+.collier{border-top:1px solid var(--trait)}
+@media (min-width:760px){
+  #l-colliers{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 32px}
+  .collier+.collier{border-top:0}
+}
+.collier h3{margin:0}
+.collier h3 span{font-family:var(--corps);font-weight:400;font-size:.95rem;color:var(--doux);margin-left:8px}
+.collier svg{display:block;width:100%;max-width:520px;height:auto;margin-top:2px}
+.b-tole{fill:var(--creux);stroke:var(--doux);stroke-width:1}
+.b-trait{stroke:var(--accent);stroke-width:1.2}
+.b-trou{fill:var(--accent)}
+.b-cote{fill:var(--texte);font:700 13px var(--cond)}
+.b-dim{stroke:var(--doux);stroke-width:1}
+.b-lg{fill:var(--doux);font:500 12px var(--corps)}
+
+/* ---------- Pente ---------- */
+.convert{
+  display:grid;gap:14px 20px;align-items:center;
+  grid-template-columns:minmax(0,1fr);
+  background:var(--creux);border:1px solid var(--trait);border-radius:6px;padding:14px;
+}
+@media (min-width:640px){.convert{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
+.champs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
+.champs .egal{font-family:var(--cond);font-size:1.6rem;color:var(--doux);padding-bottom:10px}
+.champ label{display:block;font-size:.85rem;color:var(--doux);margin-bottom:4px}
+.champ.plein{grid-column:1/-1}
+.saisie{
+  display:flex;align-items:baseline;background:var(--panneau);
+  border:1px solid var(--trait);border-radius:6px;padding:0 10px;
+}
+.saisie:focus-within{border-color:var(--accent)}
+.saisie input{
+  flex:1;min-width:0;width:100%;border:0;background:none;color:var(--texte);
+  font:700 1.7rem var(--cond);font-variant-numeric:tabular-nums;padding:8px 0;outline:none;
+}
+.saisie span{font-family:var(--cond);font-size:1.2rem;color:var(--doux);padding-left:4px}
+.resultat{margin:10px 0 0;min-height:1.5em;color:var(--doux)}
+.resultat b{color:var(--accent);font-family:var(--cond);font-size:1.25rem;font-variant-numeric:tabular-nums}
+.triangle{display:block;width:100%;max-width:300px;height:auto;justify-self:center}
+.t-plein{fill:rgba(255,122,26,.14);stroke:none}
+.t-cotes{fill:none;stroke:var(--doux);stroke-width:1.2}
+.t-pente{stroke:var(--accent);stroke-width:2.5;stroke-linecap:round}
+.t-arc{fill:none;stroke:var(--accent);stroke-width:1.2}
+.t-txt{fill:var(--doux);font:500 12px var(--corps)}
+.t-val{fill:var(--texte);font:700 14px var(--cond)}
+
+.pentes{list-style:none;margin:14px 0 0;padding:0;columns:2;column-gap:22px}
+@media (min-width:640px){.pentes{columns:3}}
+@media (min-width:940px){.pentes{columns:5}}
+.pentes li{
+  display:flex;justify-content:space-between;align-items:baseline;break-inside:avoid;
+  padding:7px 0;border-bottom:1px solid var(--trait);
+}
+.pentes span{color:var(--doux)}
+.pentes b{font-family:var(--cond);font-weight:700;font-size:1.15rem;font-variant-numeric:tabular-nums}
+
+/* ---------- Pied ---------- */
+footer{max-width:1100px;margin:0 auto;padding:10px 16px 28px;color:var(--doux);font-size:.9rem;text-align:center}
+
+/* ---------- Impression : palette claire ---------- */
+@media print{
+  :root{--fond:#fff;--panneau:#fff;--creux:#fff;--trait:#bbb;--texte:#000;--doux:#444;--accent:#000;--doute:#000;color-scheme:light}
+  .nav,.hub,.convert,.legende{display:none}
+  main{display:block;padding:0}
+  .fiche{break-inside:avoid;margin:0 0 10px;border-color:#999}
+  .doute::after{content:" (à vérifier)"}
+  .pentes{columns:5}
+}
+</style>
+</head>
+<body>
+
+<header class="tete">
+  <a class="hub" href="index.html">&larr; Hub TolTem</a>
+  <h1>Aide-mémoire atelier</h1>
+  <p class="intro">Fini de chercher la feuille volante, tout est ici.</p>
+  <p class="legende" id="legende" hidden><span class="doute">En jaune</span> : valeur lue sur une photo floue, à contrôler sur le papier.</p>
+</header>
+
+<nav class="nav" aria-label="Sections">
+  <ul>
+    <li><a href="#garde">Garde de grève</a></li>
+    <li><a href="#omega">Oméga</a></li>
+    <li><a href="#solin">Solin</a></li>
+    <li><a href="#rive">Rive alu</a></li>
+    <li><a href="#colliers">Colliers</a></li>
+    <li><a href="#pente">Pente</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <section class="fiche" id="garde">
+    <h2>Garde de grève</h2>
+    <div id="t-garde"></div>
+    <p class="note">Tôle de 2000 × 1000. Les développés 142,8, 166,6 et 250 tombent juste dedans, le 310 et le 410 laissent une chute.</p>
+  </section>
+
+  <section class="fiche" id="omega">
+    <h2>Oméga</h2>
+    <div id="t-omega"></div>
+    <p class="note" id="n-omega"></p>
+  </section>
+
+  <section class="fiche" id="solin">
+    <h2>Solin</h2>
+    <p class="fait" id="f-solin"></p>
+    <h3 id="h-pliage"></h3>
+    <div id="t-pliage"></div>
+    <p class="note" id="n-pliage"></p>
+  </section>
+
+  <section class="fiche" id="rive">
+    <h2>Rive alu</h2>
+    <p class="fait" id="f-rive"></p>
+    <div id="t-rive"></div>
+    <p class="note" id="n-rive"></p>
+  </section>
+
+  <section class="fiche large" id="colliers">
+    <h2>Colliers chapeaux</h2>
+    <p class="note" id="n-colliers" style="margin:0 0 4px"></p>
+    <div id="l-colliers"></div>
+  </section>
+
+  <section class="fiche large" id="pente">
+    <h2>Pente</h2>
+    <div class="convert">
+      <div>
+        <div class="champs">
+          <div class="champ">
+            <label for="deg">Angle</label>
+            <div class="saisie"><input id="deg" type="text" inputmode="decimal" autocomplete="off" value="15"><span>°</span></div>
+          </div>
+          <div class="egal" aria-hidden="true">=</div>
+          <div class="champ">
+            <label for="pct">Pente</label>
+            <div class="saisie"><input id="pct" type="text" inputmode="decimal" autocomplete="off"><span>%</span></div>
+          </div>
+          <div class="champ plein">
+            <label for="larg">Largeur ou diamètre</label>
+            <div class="saisie"><input id="larg" type="text" inputmode="decimal" autocomplete="off" value="1000"><span>mm</span></div>
+          </div>
+        </div>
+        <p class="resultat" id="r-pente" aria-live="polite"></p>
+      </div>
+      <svg class="triangle" id="tri" viewBox="0 0 240 160" role="img" aria-label="Triangle de pente"></svg>
+    </div>
+    <ul class="pentes" id="l-pentes"></ul>
+  </section>
+
+</main>
+
+<footer>Made with love by weapon666 pour TolTem</footer>
+
+<script>
+/* =====================================================================
+   DONNÉES — tout ce qui s'affiche vient d'ici.
+   check: true  -> valeur affichée en jaune (à vérifier sur le papier)
+   null         -> affiche "à compléter"
+   Une fois une valeur contrôlée, enlève simplement le check.
+   ===================================================================== */
+const DATA = {
+
+  gardeGreve: [
+    { h: 70,  dev: 142.8, qte: 14 },
+    { h: 100, dev: 166.6, qte: 12 },
+    { h: 105, dev: 166.6, qte: 12 },
+    { h: 140, dev: 250,   qte: 8  },
+    { h: 150, dev: 250,   qte: 8  },
+    { h: 200, dev: 310,   qte: 6  },
+    { h: 300, dev: 410,   qte: 4  }
+  ],
+
+  omega: {
+    lignes: [
+      { ep: 'Platine 10/10', dev: '295 × 110' },
+      { ep: 'Oméga 8/10', dev: '295 × 125' }
+    ],
+    note: 'Annotation à côté du tableau : P.30'
+  },
+
+  solin: {
+    dev: 90,
+    ep: '8/10',
+    pliage: {
+      titre: 'Pliage solin alu 8/10',
+      plis: [
+        { cote: 62, angle: 105 },
+        { cote: 47, angle: 105 },
+        { cote: 10, angle: 140 },
+        { cote: 10, angle: 140 }
+      ],
+      note: 'Noté à côté du post-it : − 0,6'
+    }
+  },
+
+  rive: {
+    ep: '6/10',
+    retrait: 62,          // talon = dév. réel − retrait
+    lignes: [
+      { dev: 125 },
+      { dev: 166.6 }
+    ]
+  },
+
+  colliers: {
+    // Relevés sur la feuille de l'atelier
+    releves: [
+      { d: 300, lg: 1000, pas: 235, rep: [147.5, 382.5, 617.5, 852.5] },
+      { d: 350, lg: 1165, pas: 276, rep: [168, 444, 720, 996] }
+    ],
+    // Diamètres calculés avec la règle déduite des deux relevés :
+    //   pas          = Ø × π/4, arrondi au mm (un quart de la circonférence)
+    //   Lg           = 4 × pas + 2 × bout
+    //   1er repère   = bout + pas / 2, puis + pas à chaque fois
+    // Pour en ajouter un, mets simplement son diamètre dans la liste.
+    calcules: [400, 450, 500, 550, 600],
+    bout: 30
+  }
+};
+
+/* ---------- Outils ---------- */
+const $ = id => document.getElementById(id);
+const nf = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2, useGrouping: false });
+const fmt = n => nf.format(n);
+
+function val(v, check) {
+  if (v === null || v === undefined) return '<span class="vide">à compléter</span>';
+  const t = typeof v === 'number' ? fmt(v) : v;
+  return check ? '<span class="doute">' + t + '</span>' : t;
+}
+
+function table(tetes, lignes, leger) {
+  let h = '<table><thead><tr>';
+  tetes.forEach((t, i) => { h += '<th scope="col"' + (i ? ' class="num"' : '') + '>' + t + '</th>'; });
+  h += '</tr></thead><tbody>';
+  lignes.forEach(l => {
+    h += '<tr>';
+    l.forEach((c, i) => {
+      if (i === 0) h += '<th scope="row">' + c + '</th>';
+      else h += '<td class="num' + (leger && leger.includes(i) ? ' leger' : '') + '">' + c + '</td>';
+    });
+    h += '</tr>';
+  });
+  return h + '</tbody></table>';
+}
+
+/* ---------- Garde de grève ---------- */
+$('t-garde').innerHTML = table(
+  ['Hauteur', 'Dév.', 'Par tôle'],
+  DATA.gardeGreve.map(r => ['H ' + r.h, val(r.dev, r.check), val(r.qte === null ? null : r.qte + ' ml')]),
+  [2]
+);
+
+/* ---------- Oméga ---------- */
+$('t-omega').innerHTML = table(
+  ['Pièce', 'Dév.'],
+  DATA.omega.lignes.map(r => [r.ep, val(r.dev, r.check)])
+);
+$('n-omega').textContent = DATA.omega.note || '';
+
+/* ---------- Solin ---------- */
+$('f-solin').innerHTML = 'Dév. <b>' + fmt(DATA.solin.dev) + '</b> en ' + DATA.solin.ep;
+$('h-pliage').textContent = DATA.solin.pliage.titre;
+$('t-pliage').innerHTML = table(
+  ['Pli', 'Cote', 'Angle'],
+  DATA.solin.pliage.plis.map((p, i) => [i + 1, val(p.cote, p.check), val(p.angle + '°', p.check)])
+);
+$('n-pliage').textContent = DATA.solin.pliage.note || '';
+
+/* ---------- Rive alu ---------- */
+$('f-rive').textContent = 'En ' + DATA.rive.ep;
+$('t-rive').innerHTML = table(
+  ['Dév. réel', 'Talon'],
+  DATA.rive.lignes.map(r => [val(r.dev, r.check), fmt(r.dev - DATA.rive.retrait)])
+);
+$('n-rive').textContent = 'Talon = dév. réel − ' + fmt(DATA.rive.retrait) + '.';
+
+/* ---------- Colliers chapeaux ---------- */
+function bande(c) {
+  const W = 340, x0 = 14, x1 = 326, y = 44, h = 24, k = (x1 - x0) / c.lg, yd = y + h + 18;
+  let s = '<svg viewBox="0 0 ' + W + ' 106" role="img" aria-label="Bande de ' + fmt(c.lg) +
+          ' avec repères à ' + c.rep.map(fmt).join(', ') + '">';
+  s += '<rect class="b-tole" x="' + x0 + '" y="' + y + '" width="' + (x1 - x0) + '" height="' + h + '" rx="2"/>';
+  c.rep.forEach(p => {
+    const x = (x0 + p * k).toFixed(1);
+    s += '<line class="b-trait" x1="' + x + '" y1="' + (y - 6) + '" x2="' + x + '" y2="' + (y + h) + '"/>';
+    s += '<circle class="b-trou" cx="' + x + '" cy="' + (y + h / 2) + '" r="3.5"/>';
+    s += '<text class="b-cote" x="' + x + '" y="' + (y - 12) + '" text-anchor="middle">' + fmt(p) + '</text>';
+  });
+  s += '<line class="b-dim" x1="' + x0 + '" y1="' + yd + '" x2="' + x1 + '" y2="' + yd + '"/>';
+  s += '<line class="b-dim" x1="' + x0 + '" y1="' + (yd - 5) + '" x2="' + x0 + '" y2="' + (yd + 5) + '"/>';
+  s += '<line class="b-dim" x1="' + x1 + '" y1="' + (yd - 5) + '" x2="' + x1 + '" y2="' + (yd + 5) + '"/>';
+  s += '<text class="b-lg" x="' + (W / 2) + '" y="' + (yd + 16) + '" text-anchor="middle">Lg ' + fmt(c.lg) + '</text>';
+  return s + '</svg>';
+}
+
+function collierCalcule(d) {
+  const b = DATA.colliers.bout;
+  const pas = Math.round(Math.PI * d / 4);
+  return { d: d, lg: 4 * pas + 2 * b, pas: pas, rep: [0, 1, 2, 3].map(i => b + pas / 2 + i * pas), calc: true };
+}
+
+$('l-colliers').innerHTML = DATA.colliers.releves
+  .concat(DATA.colliers.calcules.map(collierCalcule))
+  .sort((a, b) => a.d - b.d)
+  .map(c => '<div class="collier"><h3>Ø ' + c.d + '<span>Lg ' + fmt(c.lg) + ', pas ' + fmt(c.pas) +
+            (c.calc ? ' (calculé)' : '') + '</span></h3>' + bande(c) + '</div>')
+  .join('');
+$('n-colliers').textContent =
+  'Ø 300 et Ø 350 relevés sur la feuille. Les autres sont calculés : pas = Ø × 0,785 arrondi au mm, ' +
+  'Lg = 4 × pas + ' + fmt(2 * DATA.colliers.bout) + ', premier repère = ' + fmt(DATA.colliers.bout) + ' + pas ÷ 2.';
+
+/* ---------- Pente ---------- */
+const RAD = Math.PI / 180;
+const deg = $('deg'), pct = $('pct'), larg = $('larg'), res = $('r-pente'), tri = $('tri');
+const lire = el => {
+  const t = el.value.trim().replace(',', '.');
+  if (t === '') return NaN;
+  return Number(t);
+};
+const deux = n => n.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+let angle = NaN;   // angle courant en degrés, quel que soit le champ saisi
+
+function dessiner(a, l, haut) {
+  const ox = 16, oy = 132, r = a * RAD;
+  const s = a === 0 ? 150 : Math.min(150 / Math.cos(r), 108 / Math.sin(r));
+  const bx = ox + s * Math.cos(r), cy = oy - s * Math.sin(r);
+  const f = n => n.toFixed(1);
+  let h = '<polygon class="t-plein" points="' + ox + ',' + oy + ' ' + f(bx) + ',' + oy + ' ' + f(bx) + ',' + f(cy) + '"/>';
+  h += '<polyline class="t-cotes" points="' + ox + ',' + oy + ' ' + f(bx) + ',' + oy + ' ' + f(bx) + ',' + f(cy) + '"/>';
+  h += '<line class="t-pente" x1="' + ox + '" y1="' + oy + '" x2="' + f(bx) + '" y2="' + f(cy) + '"/>';
+  if (a > 0) {
+    const R = 30;
+    h += '<path class="t-arc" d="M' + (ox + R) + ',' + oy + ' A' + R + ',' + R + ' 0 0 0 ' +
+         f(ox + R * Math.cos(r)) + ',' + f(oy - R * Math.sin(r)) + '"/>';
+  }
+  h += '<text class="t-txt" x="' + f((ox + bx) / 2) + '" y="' + (oy + 16) + '" text-anchor="middle">' + deux(l) + '</text>';
+  h += '<text class="t-val" x="' + f(bx + 6) + '" y="' + f((oy + cy) / 2 + 5) + '">' + deux(haut) + '</text>';
+  const haut0 = Math.max(0, cy - 18);   // recadre le dessin pour les petites pentes
+  tri.setAttribute('viewBox', '0 ' + f(haut0) + ' 240 ' + f(160 - haut0));
+  tri.innerHTML = h;
+}
+
+function afficher() {
+  const l = lire(larg);
+  if (!(angle >= 0 && angle < 90)) {
+    res.textContent = 'Entre un angle de 0 à 89° ou une pente positive.';
+    tri.innerHTML = '';
+    return;
+  }
+  if (!(l > 0)) {
+    res.textContent = 'Entre une largeur ou un diamètre en mm.';
+    tri.innerHTML = '';
+    return;
+  }
+  const r = angle * RAD, haut = l * Math.tan(r), rampant = l / Math.cos(r);
+  res.innerHTML = 'Soit <b>' + deux(haut) + ' mm</b> de hauteur sur ' + deux(l) +
+                  ', rampant ' + deux(rampant) + '.';
+  dessiner(angle, l, haut);
+}
+
+function depuisAngle() {
+  const a = lire(deg);
+  if (a >= 0 && a < 90) { angle = a; pct.value = deux(Math.tan(a * RAD) * 100); }
+  else { angle = NaN; pct.value = ''; }
+  afficher();
+}
+function depuisPente() {
+  const p = lire(pct);
+  if (p >= 0) { angle = Math.atan(p / 100) / RAD; deg.value = deux(angle); }
+  else { angle = NaN; deg.value = ''; }
+  afficher();
+}
+deg.addEventListener('input', depuisAngle);
+pct.addEventListener('input', depuisPente);
+larg.addEventListener('input', afficher);
+[deg, pct, larg].forEach(el => el.addEventListener('focus', () => el.select()));
+depuisAngle();
+
+let liste = '';
+for (let d = 1; d <= 45; d++) {
+  liste += '<li><span>' + d + '°</span><b>' + (Math.tan(d * RAD) * 100).toFixed(2).replace('.', ',') + ' %</b></li>';
+}
+$('l-pentes').innerHTML = liste;
+
+/* ---------- Légende : visible seulement s'il reste du jaune ---------- */
+$('legende').hidden = !document.querySelector('main .doute');
+
+/* ---------- Onglet actif dans la navigation ---------- */
+if ('IntersectionObserver' in window) {
+  const liens = {};
+  const barre = document.querySelector('.nav ul');
+  document.querySelectorAll('.nav a').forEach(a => { liens[a.getAttribute('href').slice(1)] = a; });
+  const obs = new IntersectionObserver(entrees => {
+    entrees.forEach(e => {
+      if (!e.isIntersecting) return;
+      Object.values(liens).forEach(a => a.classList.remove('ici'));
+      const a = liens[e.target.id];
+      if (a) { a.classList.add('ici'); barre.scrollLeft = a.offsetLeft - 16; }
+    });
+  }, { rootMargin: '-25% 0px -70% 0px' });
+  document.querySelectorAll('main section').forEach(s => obs.observe(s));
+}
+</script>
+</body>
+</html>
